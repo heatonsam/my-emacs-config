@@ -277,9 +277,14 @@
 (with-eval-after-load 'flycheck
   (add-hook 'flycheck-mode-hook #'flycheck-inline-mode))
 
-;;(straight-use-package 'yasnippet)
-;;(require 'yasnippet)
-;;(yas-global-mode 1)
+;; Writeroom-mode
+(straight-use-package 'writeroom-mode)
+(straight-use-package 'writegood-mode)
+
+(add-hook 'journal-mode-hook 'writeroom-mode)
+(add-hook 'journal-mode-hook 'writegood-mode)
+
+(straight-use-package 'expand-region)
 
 (straight-use-package 'avy)
 (avy-setup-default)
@@ -318,17 +323,16 @@
 
 ;; Navigation
 (straight-use-package 'treemacs)
-(require 'treemacs)
 (straight-use-package 'treemacs-projectile)
 (straight-use-package 'treemacs-icons-dired)
 (straight-use-package 'treemacs-magit)
 (straight-use-package 'lsp-treemacs)
-;;(global-set-key (kbd "M-0") treemacs-select-window)
-;;(global-set-key (kbd "C-x t 1") treemacs-delete-other-windows)
-;;(global-set-key (kbd "C-x t t") treemacs)
-;;(global-set-key (kbd "C-x t B") treemacs-bookmark)
-;;(global-set-key (kbd "C-x t C-t") treemacs-find-file)
-;;(global-set-key (kbd "C-x t M-t") treemacs-find-tag)
+(global-set-key (kbd "M-0") 'treemacs-select-window)
+(global-set-key (kbd "C-x t 1") 'treemacs-delete-other-windows)
+(global-set-key (kbd "C-x t t") 'treemacs)
+(global-set-key (kbd "C-x t B") 'treemacs-bookmark)
+(global-set-key (kbd "C-x t C-t") 'treemacs-find-file)
+(global-set-key (kbd "C-x t M-t") 'treemacs-find-tag)
 
 ;; Projects
 (straight-use-package 'projectile)
@@ -423,6 +427,7 @@
 (straight-use-package 'php-mode)
 (straight-use-package 'pip-requirements)
 (straight-use-package 'docker)
+(straight-use-package 'docker-tramp)
 (straight-use-package 'company-jedi)
 (straight-use-package 'dotenv-mode)
 (straight-use-package 'irony)
@@ -436,14 +441,20 @@
 
 (straight-use-package 'cider)
 
-;; LSP
+;; LSP (Requires more configuration)
+(straight-use-package 'yasnippet)
+;;(require 'yasnippet)
+;;(yas-global-mode 1)
 (straight-use-package 'lsp-mode)
+(straight-use-package 'hydra)
 (straight-use-package 'company-lsp)
+(straight-use-package 'lsp-ui)
+(require 'lsp-ui)
+(straight-use-package 'lsp-java)
 (straight-use-package 'dap-mode)
 (straight-use-package 'helm-lsp)
-(straight-use-package 'lsp-ui)
-(require 'lsp-mode)
 (add-hook 'prog-mode-hook #'lsp)
+(add-hook 'lsp-mode-hook 'lsp-ui-mode)
 
 ;; Language specific completion
 (straight-use-package 'jedi-core)
@@ -515,14 +526,6 @@
 ;;         ("books" ,(list (all-the-icons-faicon "book")) nil nil :ascent center)))
 
 (straight-use-package 'org-journal)
-(straight-use-package 'org-noter)
-;; (straight-use-package 'org-dotemacs)
-(straight-use-package 'org-chef)
-
-;; Non-activated packages
-;; (straight-use-package 'expand-region)
-;; (straight-use-package 'iedit)
-
 ;;; emacs-config.el ends here
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
