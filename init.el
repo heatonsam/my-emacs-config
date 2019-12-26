@@ -70,6 +70,7 @@
 (setq inhibit-startup-screen t)
 (setq-default indent-tabs-mode nil)
 (setq-default tab-width 2)
+(setq c-basic-offset 2)
 (setq indent-line-function 'insert-tab)
 (setq sentence-end-double-space nil)
 (setq-default show-trailing-whitespace t)
@@ -356,7 +357,7 @@
 
 ;; Indentation
 (straight-use-package 'aggressive-indent)
-(add-hook 'prog-mode-hook #'aggressive-indent-mode)
+;; (add-hook 'prog-mode-hook #'aggressive-indent-mode)
 
 ;;(straight-use-package 'highlight-indent-guides)
 ;;(add-hook 'prog-mode-hook 'highlight-indent-guides-mode)
@@ -424,7 +425,39 @@
 (straight-use-package 'json-mode)
 (straight-use-package 'clojure-mode)
 (straight-use-package 'sass-mode)
+
+;; PHP
 (straight-use-package 'php-mode)
+(add-hook 'php-mode-hook (lambda ()
+                           (defun ywb-php-lineup-arglist-intro (langelem)
+                             (save-excursion
+                               (goto-char (cdr langelem))
+                               (vector (+ (current-column) c-basic-offset))))
+                           (defun ywb-php-lineup-arglist-close (langelem)
+                             (save-excursion
+                               (goto-char (cdr langelem))
+                               (vector (current-column))))
+                           (c-set-offset 'arglist-intro 'ywb-php-lineup-arglist-intro)
+                           (c-set-offset 'arglist-close 'ywb-php-lineup-arglist-close)))
+
+(defun unindent-closure ()
+  "Fix php-mode indent for closures."
+  (let ((syntax (mapcar 'car c-syntactic-context)))
+    (if (and (member 'arglist-cont-nonempty syntax)
+             (or
+              (member 'statement-block-intro syntax)
+              (member 'brace-list-intro syntax)
+              (member 'brace-list-close syntax)
+              (member 'block-close syntax)))
+        (save-excursion
+          (beginning-of-line)
+          (delete-char (* (count 'arglist-cont-nonempty syntax)
+                          c-basic-offset))) )))
+
+(add-hook 'php-mode-hook
+          (lambda ()
+            (add-hook 'c-special-indent-hook 'unindent-closure)))
+
 (straight-use-package 'pip-requirements)
 (straight-use-package 'docker)
 (straight-use-package 'docker-tramp)
