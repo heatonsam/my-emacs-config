@@ -18,10 +18,10 @@
   (load bootstrap-file nil 'nomessage))
 
 ;; Backups
-(setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
+(setq backup-directory-alist '(("." . "~/.config/emacs/backups")))
 
 ;; Autosaving, Backups
-(setq delete-old-versions -1)
+(setq delete-old-versions t)
 (setq version-control t)
 (setq vc-make-backup-files t)
 (setq auto-save-file-name-transforms '((".*" "~/.config/emacs/auto-save-list/" t)))
@@ -55,28 +55,45 @@
 (when window-system (set-frame-size (selected-frame) 100 30))
 
 ;; Unbind Pesky Sleep Button
-(global-unset-key [(control z)])
-(global-unset-key [(control x)(control z)])
+
 
 ;; Enable text wrap
 (add-hook 'text-mode-hook 'turn-on-visual-line-mode)
 
-;; Clean up whitespace
+s;; Clean up whitespace
 ;;(bind-key "M-SPC" 'cycle-spacing)
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
 ;; Misc visual/workspace changes
 (save-place-mode 1)
+
+(defun save-place-reposition ()
+  "Force windows to recenter current line (with saved position)."
+  (run-with-timer 0 nil
+                  (lambda (buf)
+                    (when (buffer-live-p buf)
+                      (dolist (win (get-buffer-window-list buf nil t))
+                        (with-selected-window win (recenter)))))
+                  (current-buffer)))
+
+(add-hook 'find-file-hook 'save-place-reposition t)
+
 (setq inhibit-startup-screen t)
 (setq-default indent-tabs-mode nil)
 (setq-default tab-width 2)
 (setq c-basic-offset 2)
+
 (setq indent-line-function 'insert-tab)
+
 (setq sentence-end-double-space nil)
 (setq-default show-trailing-whitespace t)
+
 (setq inhibit-compacting-font-caches t)
+
 (customize-set-variable 'scroll-bar-mode nil)
 (customize-set-variable 'horizontal-scroll-bar-mode nil)
+
+
 (fringe-mode 0)
 (fset 'yes-or-no-p 'y-or-n-p)
 (column-number-mode 1)
@@ -104,7 +121,6 @@
 
 (when (window-system)
   (set-frame-font "Fira Mono-13"))
-
 (defun fira-code-mode--make-alist (list)
   "Generate prettify-symbols alist from LIST."
   (let ((idx -1))
@@ -159,12 +175,10 @@
     (fira-code-mode--disable)))
 
 (defun fira-code-mode--setup ()
-  "Setup Fira Code Symbols"
+  "Setup Fira Code Symbols."
   (set-fontset-font t '(#Xe100 . #Xe16f) "Fira Code Symbol"))
 
 (provide 'fira-code-mode)
-;;(fira-code-mode 1)
-;; (add-hook 'emacs-startup-hook 'fira-code-mode)
 (add-hook 'prog-mode-hook 'fira-code-mode)
 
 ;; Package installation
@@ -389,8 +403,12 @@
 (straight-use-package 'mood-one-theme)
 (straight-use-package 'ewal-spacemacs-themes)
 (straight-use-package 'chocolate-theme)
+(straight-use-package 'atom-one-dark-theme)
+(straight-use-package 'dakrone-theme)
+
 
 ;; Theme to load on startup
+(setq darkokai-mode-line-padding 1) ;; Default mode-line box width
 (load-theme 'darkokai t)
 
 ;; Modelines
@@ -400,8 +418,24 @@
 ;; (straight-use-package 'mood-line)
 
 ;; Modeline to load on startup
-(require 'doom-modeline)
+;; (require 'doom-modeline)
 (doom-modeline-mode 1)
+
+;;; alias the new `flymake-report-status-slim' to
+;;; `flymake-report-status'
+(defalias 'flymake-report-status 'flymake-report-status-slim)
+(defun flymake-report-status-slim (e-w &optional status)
+  "Show \"slim\" flymake status in mode line."
+  (when e-w
+    (setq flymake-mode-line-e-w e-w))
+  (when status
+    (setq flymake-mode-line-status status))
+  (let* ((mode-line " Φ"))
+    (when (> (length flymake-mode-line-e-w) 0)
+      (setq mode-line (concat mode-line ":" flymake-mode-line-e-w)))
+    (setq mode-line (concat mode-line flymake-mode-line-status))
+    (setq flymake-mode-line mode-line)
+    (force-mode-line-update)))
 
 ;;(require 'spaceline-all-the-icons)
 ;;(use-package spaceline-all-the-icons
@@ -428,35 +462,6 @@
 
 ;; PHP
 (straight-use-package 'php-mode)
-(add-hook 'php-mode-hook (lambda ()
-                           (defun ywb-php-lineup-arglist-intro (langelem)
-                             (save-excursion
-                               (goto-char (cdr langelem))
-                               (vector (+ (current-column) c-basic-offset))))
-                           (defun ywb-php-lineup-arglist-close (langelem)
-                             (save-excursion
-                               (goto-char (cdr langelem))
-                               (vector (current-column))))
-                           (c-set-offset 'arglist-intro 'ywb-php-lineup-arglist-intro)
-                           (c-set-offset 'arglist-close 'ywb-php-lineup-arglist-close)))
-
-(defun unindent-closure ()
-  "Fix php-mode indent for closures."
-  (let ((syntax (mapcar 'car c-syntactic-context)))
-    (if (and (member 'arglist-cont-nonempty syntax)
-             (or
-              (member 'statement-block-intro syntax)
-              (member 'brace-list-intro syntax)
-              (member 'brace-list-close syntax)
-              (member 'block-close syntax)))
-        (save-excursion
-          (beginning-of-line)
-          (delete-char (* (count 'arglist-cont-nonempty syntax)
-                          c-basic-offset))) )))
-
-(add-hook 'php-mode-hook
-          (lambda ()
-            (add-hook 'c-special-indent-hook 'unindent-closure)))
 
 (straight-use-package 'pip-requirements)
 (straight-use-package 'docker)
@@ -500,6 +505,7 @@
 (straight-use-package 'org-bullets)
 (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
 (straight-use-package 'org-pomodoro)
+(require 'org-tempo)
 
 ;; (setq org-capture-templates
 ;;       '(("c" "Cookbook" entry (file "~/org/cookbook.org")
@@ -559,12 +565,18 @@
 ;;         ("books" ,(list (all-the-icons-faicon "book")) nil nil :ascent center)))
 
 (straight-use-package 'org-journal)
+
+(set-face-background 'line-number "#242728")
+(set-face-foreground 'line-number-current-line "#63de5d")
+
 ;;; emacs-config.el ends here
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(custom-safe-themes
+   '("e47c0abe03e0484ddadf2ae57d32b0f29f0b2ddfe7ec810bd6d558765d9a6a6c" "0fe9f7a04e7a00ad99ecacc875c8ccb4153204e29d3e57e9669691e6ed8340ce" "afe5e2fb3b1e295e11c3c22e7d9ea7288a605c110363673987c8f6d05b1e9972" "7d937147c6dcb7b7693b98cb34af3fa024083c97167e6909c611ddc05b578034" "9d54f3a9cf99c3ffb6ac8e84a89e8ed9b8008286a81ef1dbd48d24ec84efb2f1" "4a9f595fbffd36fe51d5dd3475860ae8c17447272cf35eb31a00f9595c706050" "a7928e99b48819aac3203355cbffac9b825df50d2b3347ceeec1e7f6b592c647" "846ef3695c42d50347884515f98cc359a7a61b82a8d0c168df0f688cf54bf089" "837f2d1e6038d05f29bbcc0dc39dbbc51e5c9a079e8ecd3b6ef09fc0b149ceb1" "dc677c8ebead5c0d6a7ac8a5b109ad57f42e0fe406e4626510e638d36bcc42df" "82b5e8962e15b145fe0c37612ef44b1fec025cf2aa6af31c87d0b37f8b5ae6e0" "32fd809c28baa5813b6ca639e736946579159098d7768af6c68d78ffa32063f4" default))
  '(horizontal-scroll-bar-mode nil)
  '(org-agenda-files '("~/Documents/org/agenda.org"))
  '(scroll-bar-mode nil))
