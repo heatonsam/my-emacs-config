@@ -1,0 +1,289 @@
+#+TITLE: Sam's Emacs Configuration
+#+AUTHOR: Sam Heaton
+#+DESCRIPTION: Coming soon
+* Introduction
+This is my second iteration of an Emacs init file done in org-mode. I find this useful for documentation and making sure the meaning of each part of the configuration is preserved. This file is approximately two years of Emacs configs in the making is drawn from various sources at various times and overhauled. It also reflects the languages I have been using at the most recent iteration.
+
+The basic model for how to do this configuration in org-mode is taken from https://github.com/larstvei/dot-emacs/blob/master/init.org.
+
+* Sections
+** Package installation
+Use =straight.el=, the [[https://github.com/raxod502/straight.el]["Next-generation, purely functional package manager for the Emacs hacker."]]
+
+#+begin_src emacs-lisp
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 5))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
+#+end_src
+
+Next we want to load all the packages using the =mapc= function to apply =straight-use-package= to all the package names.
+
+#+begin_src emacs-lisp
+(mapc 'straight-use-package
+  (list
+  'dash
+  'f
+  'popup
+  'async
+  'helm-core
+  'better-defaults
+  'helm
+  'helm-swoop
+  'flycheck
+  'expand-region
+  'avy
+  'which-key
+  'multiple-cursors
+  'restart-emacs
+  'highlight-thing
+  'smooth-scrolling
+  'visual-regexp
+  'auto-compile
+  'undo-tree
+  'treemacs
+  'treemacs-projectile
+  'treemacs-icons-dired
+  'treemacs-magit
+  'projectile
+  'company
+  'helm-company
+  'aggressive-indent
+  'smartparens
+  'rainbow-delimiters
+  'darkokai-theme
+  'doom-modeline
+  'all-the-icons
+  'emojify
+  'web-mode
+  'js2-mode
+  'yaml-mode
+  'json-mode
+  'clojure-mode
+  'sass-mode
+  'php-mode
+  'pip-requirements
+  'docker
+  'docker-tramp
+  'company-jedi
+  'dotenv-mode
+  'irony
+  'flycheck-irony
+  'nginx-mode
+  'google-c-style
+  'py-autopep8
+  'cider
+  'yasnippet
+  'lsp-mode
+  'hydra
+  'company-lsp
+  'lsp-ui
+  'lsp-java
+  'dap-mode
+  'helm-lsp
+  'jedi-core
+  'company-irony
+  'company-irony-c-headers
+  'company-jedi
+  'org-bullets
+  'org-pomodoro
+  'org-journal
+  )
+)
+#+end_src
+** Emacs variables and settings
+   Set the backup directory:
+    #+begin_src emacs-lisp
+    (setq backup-directory-alist '(("." . "~/.config/emacs/backups")))
+    #+end_src
+    Delete old backups automatically:
+    #+begin_src emacs-lisp
+    (setq delete-old-versions t)
+    #+end_src
+    Save Emacs Lisp mini-buffer history:
+    #+begin_src emacs-lisp
+    (setq savehist-file "~/.config/emacs/savehist")
+    (savehist-mode 1)
+    (setq history-length t)
+    (setq history-delete-duplicates t)
+    (setq savehist-save-minibuffer-history 1)
+    (setq savehist-additional-variables
+    '(kill-ring
+      search-ring
+      regexp-search-ring)
+      )
+    #+end_src
+    Ensure UTF-8 encoding is always used:
+    #+begin_src emacs-lisp
+    (prefer-coding-system 'utf-8)
+    (set-language-environment "UTF-8")
+    (set-default-coding-systems 'utf-8)
+    (setq file-name-coding-system 'utf-8)
+    (setq buffer-file-coding-system 'utf-8)
+    (setq coding-system-for-write 'utf-8)
+    (set-keyboard-coding-system 'utf-8)
+    (set-terminal-coding-system 'utf-8)
+    (set-clipboard-coding-system 'utf-8)
+    (set-selection-coding-system 'utf-8)
+    (setq locale-coding-system 'utf-8)
+    (setq default-process-coding-system '(utf-8 . utf-8))
+    #+end_src
+    Increase the default frame size:
+    #+begin_src emacs-lisp
+    (when window-system (set-frame-size (selected-frame) 100 30))
+    #+end_src
+    Unbind CTRL-Z to prevent Emacs going to sleep when the incorrect undo reflex is using:
+    #+begin_src
+    (global-unset-key [(control z)])
+    (global-unset-key [(control x)(control z)])
+    #+end_src
+    Enable word wrap by default for text:
+    #+begin_src emacs-lisp
+    (add-hook 'text-mode-hook 'turn-on-visual-line-mode)
+    #+end_src
+    Show stray whitespace, and delete stray whitespace characters before a file is saved:
+    #+begin_src
+    (setq-default show-trailing-whitespace t)
+    (add-hook 'before-save-hook 'delete-trailing-whitespace)
+    #+end_src
+    Save my position in each file, and reload it upon reloading the file:
+    #+begin_src emacs-lisp
+    (save-place-mode 1)
+    (defun save-place-reposition ()
+      "Force windows to recenter current line (with saved position)."
+      (run-with-timer 0 nil
+        (lambda (buf)
+          (when (buffer-live-p buf)
+            (dolist (win (get-buffer-window-list buf nil t))
+              (with-selected-window win (recenter)))))
+        (current-buffer)))
+    (add-hook 'find-file-hook 'save-place-reposition t)
+    #+end_src
+    Disable the default startup screen and start to scratch instead:
+    #+begin_src emacs-lisp
+    (setq inhibit-startup-screen t)
+    #+end_src
+    Set tab and indent settings (preference for 2 spaces):
+    #+begin_src emacs-lisp
+    (setq inhibit-startup-screen t)
+    (setq-default indent-tabs-mode nil)
+    (setq-default tab-width 2)
+    (setq c-basic-offset 2)
+    #+end_src
+    Sentences should be followed by one space, not two:
+    #+begin_src emacs-lisp
+    (setq sentence-end-double-space nil)
+    #+end_src
+    Prevents lagging for the doom-modeline package, apparently:
+    #+begin_src emacs-lisp
+    (setq inhibit-compacting-font-caches t)
+    #+end_src
+    Disable a visible scroll bar:
+    #+begin_src emacs-lisp
+    (customize-set-variable 'scroll-bar-mode nil)
+    (customize-set-variable 'horizontal-scroll-bar-mode nil)
+    #+end_src
+    Allow 'y' and 'n' to be used in place of 'yes' and 'no':
+    #+begin_src emacs-lisp
+    (fset 'yes-or-no-p 'y-or-n-p)
+    #+end_srcc
+    Display the line and column (character) number in modeline:
+    #+begin_src emacs-lisp
+    (column-number-mode 1)
+    #+end_src
+    Overwrite selected text instead of shifting it:
+    #+begin_src
+    (delete-selection-mode 1)
+    #+end_src
+    Move cursor into camelCase words:
+    #+begin_src emacs-lisp
+    (global-subword-mode 1)
+    #+end_src
+    Highlight matching parentheses:
+    #+begin_src show-paren-mode
+    (show-paren-mode)
+    #+end_src
+    Do not display the toolbar or menubar:
+    #+begin_src emacs-lisp
+    (tool-bar-mode -1)
+    (menu-bar-mode -1)
+    #+end_src
+    Disable visual/audio bell:
+    #+begin_src emacs-lisp
+    (setq ring-bell-function 'ignore)
+    #+end_src
+** Font
+   At the moment, I prefer to use [[https://github.com/tonsky/FiraCode][Fira Code]]. The ligatures are enabled using [[https://github.com/tonsky/FiraCode/wiki/Emacs-instructions][these instructions]].
+   #+begin_src emacs-lisp
+   (when (window-system)
+  (set-frame-font "Fira Mono-13"))
+(defun fira-code-mode--make-alist (list)
+  "Generate prettify-symbols alist from LIST."
+  (let ((idx -1))
+    (mapcar
+     (lambda (s)
+       (setq idx (1+ idx))
+       (let* ((code (+ #Xe100 idx))
+              (width (string-width s))
+              (prefix ())
+              (suffix '(?\s (Br . Br)))
+              (n 1))
+         (while (< n width)
+           (setq prefix (append prefix '(?\s (Br . Bl))))
+           (setq n (1+ n)))
+         (cons s (append prefix suffix (list (decode-char 'ucs code))))))
+     list)))
+
+(defconst fira-code-mode--ligatures
+  '("www" "**" "***" "**/" "*>" "*/" "\\\\" "\\\\\\"
+    "{-" "[]" "::" ":::" ":=" "!!" "!=" "!==" "-}"
+    "--" "---" "-->" "->" "->>" "-<" "-<<" "-~"
+    "#{" "#[" "##" "###" "####" "#(" "#?" "#_" "#_("
+    ".-" ".=" ".." "..<" "..." "?=" "??" ";;" "/*"
+    "/**" "/=" "/==" "/>" "//" "///" "&&" "||" "||="
+    "|=" "|>" "^=" "$>" "++" "+++" "+>" "=:=" "=="
+    "===" "==>" "=>" "=>>" "<=" "=<<" "=/=" ">-" ">="
+    ">=>" ">>" ">>-" ">>=" ">>>" "<*" "<*>" "<|" "<|>"
+    "<$" "<$>" "<!--" "<-" "<--" "<->" "<+" "<+>" "<="
+    "<==" "<=>" "<=<" "<>" "<<" "<<-" "<<=" "<<<" "<~"
+    "<~~" "</" "</>" "~@" "~-" "~=" "~>" "~~" "~~>" "%%"
+    "x" ":" "+" "+" "*"))
+
+(defvar fira-code-mode--old-prettify-alist)
+
+(defun fira-code-mode--enable ()
+  "Enable Fira Code ligatures in current buffer."
+  (setq-local fira-code-mode--old-prettify-alist prettify-symbols-alist)
+  (setq-local prettify-symbols-alist (append (fira-code-mode--make-alist fira-code-mode--ligatures) fira-code-mode--old-prettify-alist))
+  (prettify-symbols-mode t))
+
+(defun fira-code-mode--disable ()
+  "Disable Fira Code ligatures in current buffer."
+  (setq-local prettify-symbols-alist fira-code-mode--old-prettify-alist)
+  (prettify-symbols-mode -1))
+
+(define-minor-mode fira-code-mode
+  "Fira Code ligatures minor mode"
+  :lighter " Fira Code"
+  (setq-local prettify-symbols-unprettify-at-point 'right-edge)
+  (if fira-code-mode
+      (fira-code-mode--enable)
+    (fira-code-mode--disable)))
+
+(defun fira-code-mode--setup ()
+  "Setup Fira Code Symbols."
+  (set-fontset-font t '(#Xe100 . #Xe16f) "Fira Code Symbol"))
+
+(provide 'fira-code-mode)
+(add-hook 'prog-mode-hook 'fira-code-mode)
+   #+end_src
+** Package configuration
+**** =helm-swoop=
