@@ -60,7 +60,7 @@
 ;; Enable text wrap
 (add-hook 'text-mode-hook 'turn-on-visual-line-mode)
 
-s;; Clean up whitespace
+;; Clean up whitespace
 ;;(bind-key "M-SPC" 'cycle-spacing)
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
@@ -179,6 +179,71 @@ s;; Clean up whitespace
   (set-fontset-font t '(#Xe100 . #Xe16f) "Fira Code Symbol"))
 
 (provide 'fira-code-mode)
+(add-hook 'prog-mode-hook 'fira-code-mode);;; Fira code
+
+(when (window-system)
+  (set-frame-font "Fira Mono-13"))
+
+(defun fira-code-mode--make-alist (list)
+  "Generate prettify-symbols alist from LIST."
+  (let ((idx -1))
+    (mapcar
+     (lambda (s)
+       (setq idx (1+ idx))
+       (let* ((code (+ #Xe100 idx))
+              (width (string-width s))
+              (prefix ())
+              (suffix '(?\s (Br . Br)))
+              (n 1))
+         (while (< n width)
+           (setq prefix (append prefix '(?\s (Br . Bl))))
+           (setq n (1+ n)))
+         (cons s (append prefix suffix (list (decode-char 'ucs code))))))
+     list)))
+
+(defconst fira-code-mode--ligatures
+  '("www" "**" "***" "**/" "*>" "*/" "\\\\" "\\\\\\"
+    "{-" "[]" "::" ":::" ":=" "!!" "!=" "!==" "-}"
+    "--" "---" "-->" "->" "->>" "-<" "-<<" "-~"
+    "#{" "#[" "##" "###" "####" "#(" "#?" "#_" "#_("
+    ".-" ".=" ".." "..<" "..." "?=" "??" ";;" "/*"
+    "/**" "/=" "/==" "/>" "//" "///" "&&" "||" "||="
+    "|=" "|>" "^=" "$>" "++" "+++" "+>" "=:=" "=="
+    "===" "==>" "=>" "=>>" "<=" "=<<" "=/=" ">-" ">="
+    ">=>" ">>" ">>-" ">>=" ">>>" "<*" "<*>" "<|" "<|>"
+    "<$" "<$>" "<!--" "<-" "<--" "<->" "<+" "<+>" "<="
+    "<==" "<=>" "<=<" "<>" "<<" "<<-" "<<=" "<<<" "<~"
+    "<~~" "</" "</>" "~@" "~-" "~=" "~>" "~~" "~~>" "%%"
+    "x" ":" "+" "+" "*"))
+
+(defvar fira-code-mode--old-prettify-alist)
+
+(defun fira-code-mode--enable ()
+  "Enable Fira Code ligatures in current buffer."
+  (setq-local fira-code-mode--old-prettify-alist prettify-symbols-alist)
+  (setq-local prettify-symbols-alist (append (fira-code-mode--make-alist fira-code-mode--ligatures) fira-code-mode--old-prettify-alist))
+  (prettify-symbols-mode t))
+
+(defun fira-code-mode--disable ()
+  "Disable Fira Code ligatures in current buffer."
+  (setq-local prettify-symbols-alist fira-code-mode--old-prettify-alist)
+  (prettify-symbols-mode -1))
+
+(define-minor-mode fira-code-mode
+  "Fira Code ligatures minor mode"
+  :lighter " Fira Code"
+  (setq-local prettify-symbols-unprettify-at-point 'right-edge)
+  (if fira-code-mode
+      (fira-code-mode--enable)
+    (fira-code-mode--disable)))
+
+(defun fira-code-mode--setup ()
+  "Setup Fira Code Symbols"
+  (set-fontset-font t '(#Xe100 . #Xe16f) "Fira Code Symbol"))
+
+(provide 'fira-code-mode)
+;;(fira-code-mode 1)
+;; (add-hook 'emacs-startup-hook 'fira-code-mode)
 (add-hook 'prog-mode-hook 'fira-code-mode)
 
 ;; Package installation
@@ -409,7 +474,7 @@ s;; Clean up whitespace
 
 ;; Theme to load on startup
 (setq darkokai-mode-line-padding 1) ;; Default mode-line box width
-(load-theme 'darkokai t)
+(load-theme 'doom-molokai t)
 
 ;; Modelines
 ;;(straight-use-package 'spaceline)
@@ -457,7 +522,14 @@ s;; Clean up whitespace
 (add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode))
 
 (straight-use-package 'json-mode)
+
+;; Clojure
+
 (straight-use-package 'clojure-mode)
+
+(straight-use-package 'lsp-mode)
+
+;; Sass Mode
 (straight-use-package 'sass-mode)
 
 ;; PHP
@@ -568,6 +640,87 @@ s;; Clean up whitespace
 
 (set-face-background 'line-number "#242728")
 (set-face-foreground 'line-number-current-line "#63de5d")
+
+;; Experimental - styling company autocomplete
+
+;;
+;; Update the color of the company-mode context menu to fit the Monokai theme
+;; @source: https://github.com/search?q=deftheme+company-tooltip&type=Code
+;;
+(deftheme monokai-overrides)
+
+(let ((class '((class color) (min-colors 257)))
+      (terminal-class '((class color) (min-colors 89))))
+
+  (custom-theme-set-faces
+   'monokai-overrides
+
+   ;; Linum and mode-line improvements (only in sRGB).
+   `(linum
+     ((,class :foreground "#75715E"
+              :background "#49483E")))
+   `(mode-line-inactive
+     ((,class (:box (:line-width 1 :color "#2c2d26" :style nil)
+                    :background "#2c2d26"))))
+
+   ;; Custom region colouring.
+   `(region
+     ((,class :foreground "#75715E"
+              :background "#49483E")
+      (,terminal-class :foreground "#1B1E1C"
+                       :background "#8B8878")))
+
+   ;; Additional modes
+   ;; Company tweaks.
+   `(company-tooltip-common
+     ((t :foreground "#F8F8F0"
+         :background "#474747"
+         :underline t)))
+
+   `(company-template-field
+     ((t :inherit company-tooltip
+         :foreground "#C2A1FF")))
+
+   `(company-tooltip-selection
+     ((t :background "#349B8D"
+         :foreground "#BBF7EF")))
+
+   `(company-tooltip-common-selection
+     ((t :foreground "#F8F8F0"
+         :background "#474747"
+         :underline t)))
+
+   `(company-scrollbar-fg
+     ((t :background "#BBF7EF")))
+
+   `(company-tooltip-annotation
+     ((t :inherit company-tooltip
+         :foreground "#C2A1FF")))
+
+   ;; Popup menu tweaks.
+   `(popup-menu-face
+     ((t :foreground "#A1EFE4"
+         :background "#49483E")))
+
+   `(popup-menu-selection-face
+     ((t :background "#349B8D"
+         :foreground "#BBF7EF")))
+
+   ;; Circe
+   `(circe-prompt-face
+     ((t (:foreground "#C2A1FF" :weight bold))))
+
+   `(circe-server-face
+     ((t (:foreground "#75715E"))))
+
+   `(circe-highlight-nick-face
+     ((t (:foreground "#AE81FF" :weight bold))))
+
+   `(circe-my-message-face
+     ((t (:foreground "#E6DB74"))))
+
+   `(circe-originator-face
+     ((t (:weight bold))))))
 
 ;;; emacs-config.el ends here
 (custom-set-variables
