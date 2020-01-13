@@ -96,6 +96,7 @@ Next we want to load all the packages using the =mapc= function to apply =straig
   'org-bullets
   'org-pomodoro
   'org-journal
+  'golden-ratio
   )
 )
 #+end_src
@@ -219,6 +220,12 @@ Next we want to load all the packages using the =mapc= function to apply =straig
     Disable visual/audio bell:
     #+begin_src emacs-lisp
     (setq ring-bell-function 'ignore)
+    #+end_src
+    Enable =winner-mode= to undo and redo window changes
+    #+begin_src emacs-lisp
+    (winner-mode 1)
+    ;; winner-undo -> C-c <left>
+    ;; winner-redo -> C-c <right>
     #+end_src
 ** Font
    At the moment, I prefer to use [[https://github.com/tonsky/FiraCode][Fira Code]]. The ligatures are enabled using [[https://github.com/tonsky/FiraCode/wiki/Emacs-instructions][these instructions]].
