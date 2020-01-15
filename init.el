@@ -181,71 +181,6 @@
 (provide 'fira-code-mode)
 (add-hook 'prog-mode-hook 'fira-code-mode);;; Fira code
 
-(when (window-system)
-  (set-frame-font "Fira Mono-13"))
-
-(defun fira-code-mode--make-alist (list)
-  "Generate prettify-symbols alist from LIST."
-  (let ((idx -1))
-    (mapcar
-     (lambda (s)
-       (setq idx (1+ idx))
-       (let* ((code (+ #Xe100 idx))
-              (width (string-width s))
-              (prefix ())
-              (suffix '(?\s (Br . Br)))
-              (n 1))
-         (while (< n width)
-           (setq prefix (append prefix '(?\s (Br . Bl))))
-           (setq n (1+ n)))
-         (cons s (append prefix suffix (list (decode-char 'ucs code))))))
-     list)))
-
-(defconst fira-code-mode--ligatures
-  '("www" "**" "***" "**/" "*>" "*/" "\\\\" "\\\\\\"
-    "{-" "[]" "::" ":::" ":=" "!!" "!=" "!==" "-}"
-    "--" "---" "-->" "->" "->>" "-<" "-<<" "-~"
-    "#{" "#[" "##" "###" "####" "#(" "#?" "#_" "#_("
-    ".-" ".=" ".." "..<" "..." "?=" "??" ";;" "/*"
-    "/**" "/=" "/==" "/>" "//" "///" "&&" "||" "||="
-    "|=" "|>" "^=" "$>" "++" "+++" "+>" "=:=" "=="
-    "===" "==>" "=>" "=>>" "<=" "=<<" "=/=" ">-" ">="
-    ">=>" ">>" ">>-" ">>=" ">>>" "<*" "<*>" "<|" "<|>"
-    "<$" "<$>" "<!--" "<-" "<--" "<->" "<+" "<+>" "<="
-    "<==" "<=>" "<=<" "<>" "<<" "<<-" "<<=" "<<<" "<~"
-    "<~~" "</" "</>" "~@" "~-" "~=" "~>" "~~" "~~>" "%%"
-    "x" ":" "+" "+" "*"))
-
-(defvar fira-code-mode--old-prettify-alist)
-
-(defun fira-code-mode--enable ()
-  "Enable Fira Code ligatures in current buffer."
-  (setq-local fira-code-mode--old-prettify-alist prettify-symbols-alist)
-  (setq-local prettify-symbols-alist (append (fira-code-mode--make-alist fira-code-mode--ligatures) fira-code-mode--old-prettify-alist))
-  (prettify-symbols-mode t))
-
-(defun fira-code-mode--disable ()
-  "Disable Fira Code ligatures in current buffer."
-  (setq-local prettify-symbols-alist fira-code-mode--old-prettify-alist)
-  (prettify-symbols-mode -1))
-
-(define-minor-mode fira-code-mode
-  "Fira Code ligatures minor mode"
-  :lighter " Fira Code"
-  (setq-local prettify-symbols-unprettify-at-point 'right-edge)
-  (if fira-code-mode
-      (fira-code-mode--enable)
-    (fira-code-mode--disable)))
-
-(defun fira-code-mode--setup ()
-  "Setup Fira Code Symbols"
-  (set-fontset-font t '(#Xe100 . #Xe16f) "Fira Code Symbol"))
-
-(provide 'fira-code-mode)
-;;(fira-code-mode 1)
-;; (add-hook 'emacs-startup-hook 'fira-code-mode)
-(add-hook 'prog-mode-hook 'fira-code-mode)
-
 ;; Package installation
 
 ;; Core
@@ -355,7 +290,7 @@
 (straight-use-package 'flycheck-inline)
 (straight-use-package 'flycheck-status-emoji)
 (with-eval-after-load 'flycheck
-  (add-hook 'flycheck-mode-hook #'flycheck-inline-mode))
+ (add-hook 'flycheck-mode-hook #'flycheck-inline-mode))
 
 ;; Writeroom-mode
 (straight-use-package 'writeroom-mode)
@@ -373,8 +308,8 @@
 (which-key-mode)
 (which-key-setup-side-window-right-bottom)
 
-(straight-use-package 'highlight-thing)
-(add-hook 'prog-mode-hook 'highlight-thing-mode)
+;; (straight-use-package 'highlight-thing)
+;; (add-hook 'prog-mode-hook 'highlight-thing-mode)
 
 (straight-use-package 'multiple-cursors)
 (require 'multiple-cursors)
@@ -486,21 +421,7 @@
 ;; (require 'doom-modeline)
 (doom-modeline-mode 1)
 
-;;; alias the new `flymake-report-status-slim' to
-;;; `flymake-report-status'
-(defalias 'flymake-report-status 'flymake-report-status-slim)
-(defun flymake-report-status-slim (e-w &optional status)
-  "Show \"slim\" flymake status in mode line."
-  (when e-w
-    (setq flymake-mode-line-e-w e-w))
-  (when status
-    (setq flymake-mode-line-status status))
-  (let* ((mode-line " Φ"))
-    (when (> (length flymake-mode-line-e-w) 0)
-      (setq mode-line (concat mode-line ":" flymake-mode-line-e-w)))
-    (setq mode-line (concat mode-line flymake-mode-line-status))
-    (setq flymake-mode-line mode-line)
-    (force-mode-line-update)))
+(flymake-mode 0)
 
 ;;(require 'spaceline-all-the-icons)
 ;;(use-package spaceline-all-the-icons
@@ -524,10 +445,19 @@
 (straight-use-package 'json-mode)
 
 ;; Clojure
-
 (straight-use-package 'clojure-mode)
+(straight-use-package 'cider)
+(straight-use-package 'flycheck-clj-kondo)
+(require 'flycheck-clj-kondo)
 
-(straight-use-package 'lsp-mode)
+(setq company-idle-delay 0.2)
+             (setq company-minimum-prefix-length 2)
+             (setq company-dabbrev-downcase nil)
+             (setq company-dabbrev-other-buffers t)
+                             (setq company-auto-complete nil)
+             (setq company-dabbrev-code-other-buffers 'all)
+             (setq company-dabbrev-code-everywhere t)
+             (setq company-dabbrev-code-ignore-case t)
 
 ;; Sass Mode
 (straight-use-package 'sass-mode)
@@ -541,37 +471,28 @@
 (straight-use-package 'company-jedi)
 (straight-use-package 'dotenv-mode)
 (straight-use-package 'irony)
-(straight-use-package 'flycheck-irony)
 (straight-use-package 'nginx-mode)
-(straight-use-package 'google-c-style)
-
 (straight-use-package 'py-autopep8)
-(require 'py-autopep8)
 (add-hook 'python-mode-hook 'py-autopep8-enable-on-save)
-
-(straight-use-package 'cider)
 
 ;; LSP (Requires more configuration)
 (straight-use-package 'yasnippet)
 ;;(require 'yasnippet)
 ;;(yas-global-mode 1)
 (straight-use-package 'lsp-mode)
+
+(require 'lsp-ui-flycheck)
+(with-eval-after-load 'lsp-mode
+   (add-hook 'lsp-after-open-hook (lambda () (lsp-ui-flycheck-enable 1))))
+
 (straight-use-package 'hydra)
 (straight-use-package 'company-lsp)
 (straight-use-package 'lsp-ui)
-(require 'lsp-ui)
 (straight-use-package 'lsp-java)
 (straight-use-package 'dap-mode)
 (straight-use-package 'helm-lsp)
 (add-hook 'prog-mode-hook #'lsp)
 (add-hook 'lsp-mode-hook 'lsp-ui-mode)
-
-;; Language specific completion
-(straight-use-package 'jedi-core)
-(straight-use-package 'company-irony)
-(straight-use-package 'company-irony-c-headers)
-(straight-use-package 'company-jedi)
-;;(straight-use-package 'anaconda-mode)
 
 ;; Org mode
 (straight-use-package 'org-bullets)
@@ -643,85 +564,6 @@
 
 ;; Experimental - styling company autocomplete
 
-;;
-;; Update the color of the company-mode context menu to fit the Monokai theme
-;; @source: https://github.com/search?q=deftheme+company-tooltip&type=Code
-;;
-(deftheme monokai-overrides)
-
-(let ((class '((class color) (min-colors 257)))
-      (terminal-class '((class color) (min-colors 89))))
-
-  (custom-theme-set-faces
-   'monokai-overrides
-
-   ;; Linum and mode-line improvements (only in sRGB).
-   `(linum
-     ((,class :foreground "#75715E"
-              :background "#49483E")))
-   `(mode-line-inactive
-     ((,class (:box (:line-width 1 :color "#2c2d26" :style nil)
-                    :background "#2c2d26"))))
-
-   ;; Custom region colouring.
-   `(region
-     ((,class :foreground "#75715E"
-              :background "#49483E")
-      (,terminal-class :foreground "#1B1E1C"
-                       :background "#8B8878")))
-
-   ;; Additional modes
-   ;; Company tweaks.
-   `(company-tooltip-common
-     ((t :foreground "#F8F8F0"
-         :background "#474747"
-         :underline t)))
-
-   `(company-template-field
-     ((t :inherit company-tooltip
-         :foreground "#C2A1FF")))
-
-   `(company-tooltip-selection
-     ((t :background "#349B8D"
-         :foreground "#BBF7EF")))
-
-   `(company-tooltip-common-selection
-     ((t :foreground "#F8F8F0"
-         :background "#474747"
-         :underline t)))
-
-   `(company-scrollbar-fg
-     ((t :background "#BBF7EF")))
-
-   `(company-tooltip-annotation
-     ((t :inherit company-tooltip
-         :foreground "#C2A1FF")))
-
-   ;; Popup menu tweaks.
-   `(popup-menu-face
-     ((t :foreground "#A1EFE4"
-         :background "#49483E")))
-
-   `(popup-menu-selection-face
-     ((t :background "#349B8D"
-         :foreground "#BBF7EF")))
-
-   ;; Circe
-   `(circe-prompt-face
-     ((t (:foreground "#C2A1FF" :weight bold))))
-
-   `(circe-server-face
-     ((t (:foreground "#75715E"))))
-
-   `(circe-highlight-nick-face
-     ((t (:foreground "#AE81FF" :weight bold))))
-
-   `(circe-my-message-face
-     ((t (:foreground "#E6DB74"))))
-
-   `(circe-originator-face
-     ((t (:weight bold))))))
-
 ;;; emacs-config.el ends here
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -731,6 +573,23 @@
  '(custom-safe-themes
    '("e47c0abe03e0484ddadf2ae57d32b0f29f0b2ddfe7ec810bd6d558765d9a6a6c" "0fe9f7a04e7a00ad99ecacc875c8ccb4153204e29d3e57e9669691e6ed8340ce" "afe5e2fb3b1e295e11c3c22e7d9ea7288a605c110363673987c8f6d05b1e9972" "7d937147c6dcb7b7693b98cb34af3fa024083c97167e6909c611ddc05b578034" "9d54f3a9cf99c3ffb6ac8e84a89e8ed9b8008286a81ef1dbd48d24ec84efb2f1" "4a9f595fbffd36fe51d5dd3475860ae8c17447272cf35eb31a00f9595c706050" "a7928e99b48819aac3203355cbffac9b825df50d2b3347ceeec1e7f6b592c647" "846ef3695c42d50347884515f98cc359a7a61b82a8d0c168df0f688cf54bf089" "837f2d1e6038d05f29bbcc0dc39dbbc51e5c9a079e8ecd3b6ef09fc0b149ceb1" "dc677c8ebead5c0d6a7ac8a5b109ad57f42e0fe406e4626510e638d36bcc42df" "82b5e8962e15b145fe0c37612ef44b1fec025cf2aa6af31c87d0b37f8b5ae6e0" "32fd809c28baa5813b6ca639e736946579159098d7768af6c68d78ffa32063f4" default))
  '(horizontal-scroll-bar-mode nil)
+ '(lsp-ui-doc-alignment 'frame)
+ '(lsp-ui-doc-border "#1c1e1f")
+ '(lsp-ui-doc-delay 0.5)
+ '(lsp-ui-doc-enable nil)
+ '(lsp-ui-doc-header t)
+ '(lsp-ui-doc-use-childframe t)
+ '(lsp-ui-doc-use-webkit nil)
+ '(lsp-ui-flycheck-enable nil)
+ '(lsp-ui-sideline-delay 0.1)
+ '(lsp-ui-sideline-diagnostic-max-line-length 100)
+ '(lsp-ui-sideline-diagnostic-max-lines 20)
+ '(lsp-ui-sideline-ignore-duplicate t)
+ '(lsp-ui-sideline-show-code-actions nil)
+ '(lsp-ui-sideline-show-diagnostics nil)
+ '(lsp-ui-sideline-show-hover t)
+ '(lsp-ui-sideline-show-symbol nil)
+ '(lsp-ui-sideline-update-mode 'point)
  '(org-agenda-files '("~/Documents/org/agenda.org"))
  '(scroll-bar-mode nil))
 (custom-set-faces
@@ -738,4 +597,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ '(lsp-ui-doc-background ((t (:background "#1c1e1f" :foreground "DimGrey" :weight semi-light :width normal))))
+ '(lsp-ui-sideline-current-symbol ((t (:foreground "DimGray" :box (:line-width -1 :color "background at point") :weight ultra-bold :height 0.99))))
+ '(lsp-ui-sideline-global ((t nil)))
+ '(lsp-ui-sideline-symbol-info ((t (:background "background at point" :foreground "DimGrey" :slant italic :height 0.99)))))
