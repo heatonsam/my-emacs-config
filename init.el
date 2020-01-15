@@ -86,7 +86,7 @@
 (setq indent-line-function 'insert-tab)
 
 (setq sentence-end-double-space nil)
-(setq-default show-trailing-whitespace t)
+; (setq-default show-trailing-whitespace t) ; No need to show if it is deleted with each save.
 
 (setq inhibit-compacting-font-caches t)
 
