@@ -341,7 +341,6 @@
 (straight-use-package 'treemacs-projectile)
 (straight-use-package 'treemacs-icons-dired)
 (straight-use-package 'treemacs-magit)
-(straight-use-package 'lsp-treemacs)
 (global-set-key (kbd "M-0") 'treemacs-select-window)
 (global-set-key (kbd "C-x t 1") 'treemacs-delete-other-windows)
 (global-set-key (kbd "C-x t t") 'treemacs)
@@ -480,10 +479,30 @@
 ;;(require 'yasnippet)
 ;;(yas-global-mode 1)
 (straight-use-package 'lsp-mode)
+;; LSP-MODE settings
+(straight-use-package 'lsp-treemacs)
+(setq gc-cons-threshold 100000000)
+(setq read-process-output-max (* 1024 1024)) ;; 1mb
 
 (require 'lsp-ui-flycheck)
 (with-eval-after-load 'lsp-mode
    (add-hook 'lsp-after-open-hook (lambda () (lsp-ui-flycheck-enable 1))))
+
+;; Flycheck config
+;; disable jshint since we prefer eslint checking
+(setq-default flycheck-disabled-checkers
+  (append flycheck-disabled-checkers
+          '(javascript-jshint)))
+;; use eslint with web-mode for jsx files
+(flycheck-add-mode 'javascript-eslint 'web-mode)
+;; adjust indents for web-mode to 2 spaces
+(defun my-web-mode-hook ()
+  "Hooks for Web mode. Adjust indents."
+  ;;; http://web-mode.org/
+  (setq web-mode-markup-indent-offset 2)
+  (setq web-mode-css-indent-offset 2)
+  (setq web-mode-code-indent-offset 2))
+(add-hook 'web-mode-hook  'my-web-mode-hook)
 
 (straight-use-package 'hydra)
 (straight-use-package 'company-lsp)
@@ -573,17 +592,20 @@
  '(custom-safe-themes
    '("e47c0abe03e0484ddadf2ae57d32b0f29f0b2ddfe7ec810bd6d558765d9a6a6c" "0fe9f7a04e7a00ad99ecacc875c8ccb4153204e29d3e57e9669691e6ed8340ce" "afe5e2fb3b1e295e11c3c22e7d9ea7288a605c110363673987c8f6d05b1e9972" "7d937147c6dcb7b7693b98cb34af3fa024083c97167e6909c611ddc05b578034" "9d54f3a9cf99c3ffb6ac8e84a89e8ed9b8008286a81ef1dbd48d24ec84efb2f1" "4a9f595fbffd36fe51d5dd3475860ae8c17447272cf35eb31a00f9595c706050" "a7928e99b48819aac3203355cbffac9b825df50d2b3347ceeec1e7f6b592c647" "846ef3695c42d50347884515f98cc359a7a61b82a8d0c168df0f688cf54bf089" "837f2d1e6038d05f29bbcc0dc39dbbc51e5c9a079e8ecd3b6ef09fc0b149ceb1" "dc677c8ebead5c0d6a7ac8a5b109ad57f42e0fe406e4626510e638d36bcc42df" "82b5e8962e15b145fe0c37612ef44b1fec025cf2aa6af31c87d0b37f8b5ae6e0" "32fd809c28baa5813b6ca639e736946579159098d7768af6c68d78ffa32063f4" default))
  '(horizontal-scroll-bar-mode nil)
- '(lsp-ui-doc-alignment 'frame)
+ '(lsp-ui-doc-alignment 'window)
  '(lsp-ui-doc-border "#1c1e1f")
  '(lsp-ui-doc-delay 0.5)
- '(lsp-ui-doc-enable nil)
+ '(lsp-ui-doc-enable t)
  '(lsp-ui-doc-header t)
+ '(lsp-ui-doc-max-height 300)
+ '(lsp-ui-doc-position 'top)
  '(lsp-ui-doc-use-childframe t)
  '(lsp-ui-doc-use-webkit nil)
  '(lsp-ui-flycheck-enable nil)
  '(lsp-ui-sideline-delay 0.1)
  '(lsp-ui-sideline-diagnostic-max-line-length 100)
  '(lsp-ui-sideline-diagnostic-max-lines 20)
+ '(lsp-ui-sideline-enable nil)
  '(lsp-ui-sideline-ignore-duplicate t)
  '(lsp-ui-sideline-show-code-actions nil)
  '(lsp-ui-sideline-show-diagnostics nil)
