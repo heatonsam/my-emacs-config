@@ -100,7 +100,7 @@
 (delete-selection-mode 1)
 (global-subword-mode 1)
 (show-paren-mode)
-(global-display-line-numbers-mode)
+(add-hook 'prog-mode-hook #'display-line-numbers-mode)
 (global-visual-line-mode t)
 (tool-bar-mode -1)
 (menu-bar-mode -1)
@@ -119,67 +119,67 @@
 
 ;;; Fira code
 
-(when (window-system)
-  (set-frame-font "Fira Mono-13"))
-(defun fira-code-mode--make-alist (list)
-  "Generate prettify-symbols alist from LIST."
-  (let ((idx -1))
-    (mapcar
-     (lambda (s)
-       (setq idx (1+ idx))
-       (let* ((code (+ #Xe100 idx))
-              (width (string-width s))
-              (prefix ())
-              (suffix '(?\s (Br . Br)))
-              (n 1))
-         (while (< n width)
-           (setq prefix (append prefix '(?\s (Br . Bl))))
-           (setq n (1+ n)))
-         (cons s (append prefix suffix (list (decode-char 'ucs code))))))
-     list)))
+;; (when (window-system)
+;;   (set-frame-font "Fira Mono-13"))
+;; (defun fira-code-mode--make-alist (list)
+;;   "Generate prettify-symbols alist from LIST."
+;;   (let ((idx -1))
+;;     (mapcar
+;;      (lambda (s)
+;;        (setq idx (1+ idx))
+;;        (let* ((code (+ #Xe100 idx))
+;;               (width (string-width s))
+;;               (prefix ())
+;;               (suffix '(?\s (Br . Br)))
+;;               (n 1))
+;;          (while (< n width)
+;;            (setq prefix (append prefix '(?\s (Br . Bl))))
+;;            (setq n (1+ n)))
+;;          (cons s (append prefix suffix (list (decode-char 'ucs code))))))
+;;      list)))
 
-(defconst fira-code-mode--ligatures
-  '("www" "**" "***" "**/" "*>" "*/" "\\\\" "\\\\\\"
-    "{-" "[]" "::" ":::" ":=" "!!" "!=" "!==" "-}"
-    "--" "---" "-->" "->" "->>" "-<" "-<<" "-~"
-    "#{" "#[" "##" "###" "####" "#(" "#?" "#_" "#_("
-    ".-" ".=" ".." "..<" "..." "?=" "??" ";;" "/*"
-    "/**" "/=" "/==" "/>" "//" "///" "&&" "||" "||="
-    "|=" "|>" "^=" "$>" "++" "+++" "+>" "=:=" "=="
-    "===" "==>" "=>" "=>>" "<=" "=<<" "=/=" ">-" ">="
-    ">=>" ">>" ">>-" ">>=" ">>>" "<*" "<*>" "<|" "<|>"
-    "<$" "<$>" "<!--" "<-" "<--" "<->" "<+" "<+>" "<="
-    "<==" "<=>" "<=<" "<>" "<<" "<<-" "<<=" "<<<" "<~"
-    "<~~" "</" "</>" "~@" "~-" "~=" "~>" "~~" "~~>" "%%"
-    "x" ":" "+" "+" "*"))
+;; (defconst fira-code-mode--ligatures
+;;   '("www" "**" "***" "**/" "*>" "*/" "\\\\" "\\\\\\"
+;;     "{-" "[]" "::" ":::" ":=" "!!" "!=" "!==" "-}"
+;;     "--" "---" "-->" "->" "->>" "-<" "-<<" "-~"
+;;     "#{" "#[" "##" "###" "####" "#(" "#?" "#_" "#_("
+;;     ".-" ".=" ".." "..<" "..." "?=" "??" ";;" "/*"
+;;     "/**" "/=" "/==" "/>" "//" "///" "&&" "||" "||="
+;;     "|=" "|>" "^=" "$>" "++" "+++" "+>" "=:=" "=="
+;;     "===" "==>" "=>" "=>>" "<=" "=<<" "=/=" ">-" ">="
+;;     ">=>" ">>" ">>-" ">>=" ">>>" "<*" "<*>" "<|" "<|>"
+;;     "<$" "<$>" "<!--" "<-" "<--" "<->" "<+" "<+>" "<="
+;;     "<==" "<=>" "<=<" "<>" "<<" "<<-" "<<=" "<<<" "<~"
+;;     "<~~" "</" "</>" "~@" "~-" "~=" "~>" "~~" "~~>" "%%"
+;;     "x" ":" "+" "+" "*"))
 
-(defvar fira-code-mode--old-prettify-alist)
+;; (defvar fira-code-mode--old-prettify-alist)
 
-(defun fira-code-mode--enable ()
-  "Enable Fira Code ligatures in current buffer."
-  (setq-local fira-code-mode--old-prettify-alist prettify-symbols-alist)
-  (setq-local prettify-symbols-alist (append (fira-code-mode--make-alist fira-code-mode--ligatures) fira-code-mode--old-prettify-alist))
-  (prettify-symbols-mode t))
+;; (defun fira-code-mode--enable ()
+;;   "Enable Fira Code ligatures in current buffer."
+;;   (setq-local fira-code-mode--old-prettify-alist prettify-symbols-alist)
+;;   (setq-local prettify-symbols-alist (append (fira-code-mode--make-alist fira-code-mode--ligatures) fira-code-mode--old-prettify-alist))
+;;   (prettify-symbols-mode t))
 
-(defun fira-code-mode--disable ()
-  "Disable Fira Code ligatures in current buffer."
-  (setq-local prettify-symbols-alist fira-code-mode--old-prettify-alist)
-  (prettify-symbols-mode -1))
+;; (defun fira-code-mode--disable ()
+;;   "Disable Fira Code ligatures in current buffer."
+;;   (setq-local prettify-symbols-alist fira-code-mode--old-prettify-alist)
+;;   (prettify-symbols-mode -1))
 
-(define-minor-mode fira-code-mode
-  "Fira Code ligatures minor mode"
-  :lighter " Fira Code"
-  (setq-local prettify-symbols-unprettify-at-point 'right-edge)
-  (if fira-code-mode
-      (fira-code-mode--enable)
-    (fira-code-mode--disable)))
+;; (define-minor-mode fira-code-mode
+;;   "Fira Code ligatures minor mode"
+;;   :lighter " Fira Code"
+;;   (setq-local prettify-symbols-unprettify-at-point 'right-edge)
+;;   (if fira-code-mode
+;;       (fira-code-mode--enable)
+;;     (fira-code-mode--disable)))
 
-(defun fira-code-mode--setup ()
-  "Setup Fira Code Symbols."
-  (set-fontset-font t '(#Xe100 . #Xe16f) "Fira Code Symbol"))
+;; (defun fira-code-mode--setup ()
+;;   "Setup Fira Code Symbols."
+;;   (set-fontset-font t '(#Xe100 . #Xe16f) "Fira Code Symbol"))
 
-(provide 'fira-code-mode)
-(add-hook 'prog-mode-hook 'fira-code-mode);;; Fira code
+;; (provide 'fira-code-mode)
+;; (add-hook 'prog-mode-hook 'fira-code-mode);;; Fira code
 
 ;; Package installation
 
@@ -387,6 +387,11 @@
 (straight-use-package 'forge)
 (straight-use-package 'magit-todos)
 
+;; exec-path-from-shell
+(straight-use-package 'exec-path-from-shell)
+(when (memq window-system '(mac ns x))
+  (exec-path-from-shell-initialize))
+
 ;; Themes
 (straight-use-package 'zenburn-theme)
 (straight-use-package 'solarized-theme)
@@ -408,7 +413,9 @@
 
 ;; Theme to load on startup
 (setq darkokai-mode-line-padding 1) ;; Default mode-line box width
-(load-theme 'doom-molokai t)
+(load-theme 'darkokai t)
+;(load-theme 'doom-molokai t)
+;(load-theme 'doom-one)
 
 ;; Modelines
 ;;(straight-use-package 'spaceline)
@@ -441,11 +448,18 @@
 (straight-use-package 'yaml-mode)
 (add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode))
 
+(straight-use-package 'vue-mode)
+
 (straight-use-package 'json-mode)
 
 ;; Clojure
 (straight-use-package 'clojure-mode)
 (straight-use-package 'cider)
+(setq nrepl-hide-special-buffers t
+      cider-repl-pop-to-buffer-on-connect nil
+      cider-popup-stacktraces nil
+      cider-repl-popup-stacktraces t)
+
 (straight-use-package 'flycheck-clj-kondo)
 (require 'flycheck-clj-kondo)
 
@@ -484,9 +498,9 @@
 (setq gc-cons-threshold 100000000)
 (setq read-process-output-max (* 1024 1024)) ;; 1mb
 
-(require 'lsp-ui-flycheck)
-(with-eval-after-load 'lsp-mode
-   (add-hook 'lsp-after-open-hook (lambda () (lsp-ui-flycheck-enable 1))))
+;(require 'lsp-ui-flycheck)
+;(with-eval-after-load 'lsp-mode
+;   (add-hook 'lsp-after-open-hook (lambda () (lsp-ui-flycheck-enable 1))))
 
 ;; Flycheck config
 ;; disable jshint since we prefer eslint checking
@@ -497,7 +511,7 @@
 (flycheck-add-mode 'javascript-eslint 'web-mode)
 ;; adjust indents for web-mode to 2 spaces
 (defun my-web-mode-hook ()
-  "Hooks for Web mode. Adjust indents."
+  "Hooks for Web mode. Adjust indent."
   ;;; http://web-mode.org/
   (setq web-mode-markup-indent-offset 2)
   (setq web-mode-css-indent-offset 2)
@@ -513,11 +527,223 @@
 (add-hook 'prog-mode-hook #'lsp)
 (add-hook 'lsp-mode-hook 'lsp-ui-mode)
 
+;; Fonts
+
+(defun prog-mode-fonts-hook ()
+  (set-face-attribute 'default nil
+                      :font "Hack"
+                      :height 135))
+
+(add-hook 'prog-mode-hook #'prog-mode-fonts-hook)
+
 ;; Org mode
 (straight-use-package 'org-bullets)
-(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+(defun org-mode-stuff ()
+            ;; misc
+            ;; (setq left-margin-width 2)
+            ;; (setq right-margin-width 2)
+            ;; (set-window-buffer nil (current-buffer))
+            (writeroom-mode)
+            ;; (require 'org-tempo)
+            (require 'ob-clojure)
+            (require 'ob-java)
+            (org-bullets-mode 1)
+            (visual-line-mode)
+            (org-indent-mode)
+            ;; (setq header-line-format " ")
+            ;;(variable-pitch-mode 1)
+            ;;(setq header-line-format " ")
+            ;;
+            (local-set-key "\M-n" 'outline-next-visible-heading)
+            (local-set-key "\M-p" 'outline-previous-visible-heading)
+            ;; table
+            (local-set-key "\C-\M-w" 'org-table-copy-region)
+            (local-set-key "\C-\M-y" 'org-table-paste-rectangle)
+            (local-set-key "\C-\M-l" 'org-table-sort-lines)
+            ;; display images
+            (local-set-key "\M-I" 'org-toggle-image-in-org)
+            ;; fix tab
+            (local-set-key "\C-y" 'yank))
+
+(custom-theme-set-faces
+ 'user
+ '(variable-pitch ((t (:family "DejaVu Sans Mono 13" :height 140 :weight light)))) ;:weight medium
+ '(fixed-pitch ((t (:family "DejaVu Sans Mono 13" :slant normal :weight light :height 150))))) ;:width normal
+
+  (defun set-buffer-variable-pitch ()
+    (interactive)
+    (variable-pitch-mode t)
+    (setq line-spacing 4)
+    (set-face-attribute 'org-table nil :inherit 'fixed-pitch)
+    (set-face-attribute 'org-code nil :inherit 'fixed-pitch)
+    (set-face-attribute 'org-block nil :inherit 'fixed-pitch)
+    ;; (auto-complete-mode -1)
+    ;; (set-face-attribute 'org-block-background nil :inherit 'fixed-pitch)
+    )
+
+(add-hook 'org-mode-hook
+(lambda ()
+  (org-mode-stuff)
+  (set-buffer-variable-pitch)))
+
+  (add-hook 'eww-mode-hook 'set-buffer-variable-pitch)
+  (add-hook 'markdown-mode-hook 'set-buffer-variable-pitch)
+  (add-hook 'Info-mode-hook 'set-buffer-variable-pitch)
+
+(setq org-src-fontify-natively t)
+(setq org-babel-clojure-backend 'cider)
+;(set-face-attribute 'org-indent nil :inherit '(org-hide fixed-pitch))
+(setq org-ellipsis "  ")
+(setq org-hide-emphasis-markers t)
+(setq org-fontify-whole-heading-line t)
+(setq org-agenda-block-separator "")
+(setq org-fontify-done-headline t)
+(setq org-fontify-quote-and-verse-blocks t)
+(setq org-bullets-bullet-list '("⬢" "◆" "▲" "■"))
+(setq org-tags-column 0)
+(setq org-src-fontify-natively t)
+(setq org-edit-src-content-indentation 0)
+(setq org-src-tab-acts-natively t)
+(setq org-confirm-babel-evaluate nil)
+(setq org-src-preserve-indentation t)
+
 (straight-use-package 'org-pomodoro)
-(require 'org-tempo)
+(setq org-directory (expand-file-name "~/Documents/org"))
+(setq org-default-notes-file (concat org-directory "/mygtd.org"))
+(setq org-agenda-files '("~/Documents/org" "~/Documents/org/html" "~/Documents/org/html/_org"))
+(setq org-edit-src-content-indentation 0
+      org-src-tab-acts-natively t
+      org-src-fontify-natively t
+      org-confirm-babel-evaluate nil)
+
+;; A lot taken from http://www.i3s.unice.fr/~malapert/emacs_orgmode.html
+; and https://orgmode.org/worg/org-configs/org-config-examples.html
+
+(setq org-todo-keywords
+      '(
+        (sequence "IDEA(i)" "TODO(t)" "STARTED(s)" "NEXT(n)" "WAITING(w)" "|" "DONE(d)")
+        (sequence "|" "CANCELED(c)" "DELEGATED(l)" "SOMEDAY(f)")
+        ))
+
+(setq org-todo-keyword-faces
+      '(("IDEA" . (:foreground "GoldenRod" :weight bold))
+        ("NEXT" . (:foreground "IndianRed1" :weight bold))
+        ("STARTED" . (:foreground "OrangeRed" :weight bold))
+        ("WAITING" . (:foreground "coral" :weight bold))
+        ("CANCELED" . (:foreground "LimeGreen" :weight bold))
+        ("DELEGATED" . (:foreground "LimeGreen" :weight bold))
+        ("SOMEDAY" . (:foreground "LimeGreen" :weight bold))
+        ))
+
+(setq org-tag-persistent-alist
+      '((:startgroup . nil)
+        ("HOME" . ?h)
+        ("RESEARCH" . ?r)
+        ("TEACHING" . ?t)
+        (:endgroup . nil)
+        (:startgroup . nil)
+        ("OS" . ?o)
+        ("DEV" . ?d)
+        ("WWW" . ?w)
+        (:endgroup . nil)
+        (:startgroup . nil)
+        ("EASY" . ?e)
+        ("MEDIUM" . ?m)
+        ("HARD" . ?a)
+        (:endgroup . nil)
+        ("URGENT" . ?u)
+        ("KEY" . ?k)
+        ("BONUS" . ?b)
+        ("noexport" . ?x)
+        )
+      )
+
+(setq org-tag-faces
+      '(
+        ("HOME" . (:foreground "GoldenRod" :weight bold))
+        ("RESEARCH" . (:foreground "GoldenRod" :weight bold))
+        ("TEACHING" . (:foreground "GoldenRod" :weight bold))
+        ("OS" . (:foreground "IndianRed1" :weight bold))
+        ("DEV" . (:foreground "IndianRed1" :weight bold))
+        ("WWW" . (:foreground "IndianRed1" :weight bold))
+        ("URGENT" . (:foreground "Red" :weight bold))
+        ("KEY" . (:foreground "Red" :weight bold))
+        ("EASY" . (:foreground "OrangeRed" :weight bold))
+        ("MEDIUM" . (:foreground "OrangeRed" :weight bold))
+        ("HARD" . (:foreground "OrangeRed" :weight bold))
+        ("BONUS" . (:foreground "GoldenRod" :weight bold))
+        ("noexport" . (:foreground "LimeGreen" :weight bold))
+        )
+      )
+
+;; Don't know what this does yet search the variables
+(setq org-fast-tag-selection-single-key t)
+(setq org-use-fast-todo-selection t)
+
+;; Template for linking to files basically?
+(setq org-reverse-note-order t)
+(setq org-capture-templates
+      '(("t" "Todo" entry (file+headline "~/org/mygtd.org" "Tasks")
+         "* TODO %?\nAdded: %U\n" :prepend t :kill-buffer t)
+        ("i" "Idea" entry (file+headline "~/org/mygtd.org" "Someday/Maybe")
+         "* IDEA %?\nAdded: %U\n" :prepend t :kill-buffer t)
+        )
+      )
+
+(setq org-html-htmlize-output-type 'css)
+
+(define-skeleton org-skeleton
+  "Header info for a emacs-org file."
+  "Title: "
+  "#+TITLE:" str " \n"
+  "#+AUTHOR: Sam Heaton\n"
+  ;"#+email: your-email@server.com\n"
+  "#+INFOJS_OPT: \n"
+  "#+BABEL: :session *R* :cache yes :results output graphics :exports both :tangle yes \n"
+  "-----"
+ )
+(global-set-key [C-S-f4] 'org-skeleton)
+
+(add-hook 'inf-clojure-mode-hook 'clojure-mode-font-lock-setup)
+
+; activate specific org-babel languages
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '(
+   (emacs-lisp . t)
+   (clojure . t)
+   (org . t)
+   (shell . t)
+   (C . t)
+   (java . t)
+   (python . t)
+   (gnuplot . t)
+   (octave . t)
+   (R . t)
+   (js . t)
+   (awk . t)
+   ))
+
+;; ???
+;(setq ns-use-thin-smoothing t)
+
+;; Not quite sure
+(setq org-src-fontify-natively t)
+(setq org-src-tab-acts-natively t)
+
+; Adjust the number of blank lines inserted around headlines
+(setq org-ascii-headline-spacing (quote (1 . 1)))
+
+(eval-after-load "org"
+  '(require 'ox-gfm nil t))
+(setq org-html-coding-system 'utf-8-unix)
+
+;; ;; GLOBAL Keybindings that can be added to .emacs
+;; (global-set-key [f4] 'org-capture)
+;; (global-set-key [f5] '(lambda () (interactive)(find-file "~/org/mygtd.org")))
+;; (global-set-key [f6] 'org-todo-list)
+;; ;; (global-set-key [f7] 'org-agenda)
+
 
 ;; (setq org-capture-templates
 ;;       '(("c" "Cookbook" entry (file "~/org/cookbook.org")
@@ -589,9 +815,15 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(ansi-color-names-vector
+   ["#1c1e1f" "#e74c3c" "#b6e63e" "#e2c770" "#268bd2" "#fb2874" "#66d9ef" "#d6d6d4"])
  '(custom-safe-themes
-   '("e47c0abe03e0484ddadf2ae57d32b0f29f0b2ddfe7ec810bd6d558765d9a6a6c" "0fe9f7a04e7a00ad99ecacc875c8ccb4153204e29d3e57e9669691e6ed8340ce" "afe5e2fb3b1e295e11c3c22e7d9ea7288a605c110363673987c8f6d05b1e9972" "7d937147c6dcb7b7693b98cb34af3fa024083c97167e6909c611ddc05b578034" "9d54f3a9cf99c3ffb6ac8e84a89e8ed9b8008286a81ef1dbd48d24ec84efb2f1" "4a9f595fbffd36fe51d5dd3475860ae8c17447272cf35eb31a00f9595c706050" "a7928e99b48819aac3203355cbffac9b825df50d2b3347ceeec1e7f6b592c647" "846ef3695c42d50347884515f98cc359a7a61b82a8d0c168df0f688cf54bf089" "837f2d1e6038d05f29bbcc0dc39dbbc51e5c9a079e8ecd3b6ef09fc0b149ceb1" "dc677c8ebead5c0d6a7ac8a5b109ad57f42e0fe406e4626510e638d36bcc42df" "82b5e8962e15b145fe0c37612ef44b1fec025cf2aa6af31c87d0b37f8b5ae6e0" "32fd809c28baa5813b6ca639e736946579159098d7768af6c68d78ffa32063f4" default))
+   '("e1ecb0536abec692b5a5e845067d75273fe36f24d01210bf0aa5842f2a7e029f" "99ea831ca79a916f1bd789de366b639d09811501e8c092c85b2cb7d697777f93" "e074be1c799b509f52870ee596a5977b519f6d269455b84ed998666cf6fc802a" "fa2b58bb98b62c3b8cf3b6f02f058ef7827a8e497125de0254f56e373abee088" "4daff0f7fb02c7a4d5766a6a3e0931474e7c4fd7da58687899485837d6943b78" "be9645aaa8c11f76a10bcf36aaf83f54f4587ced1b9b679b55639c87404e2499" "e47c0abe03e0484ddadf2ae57d32b0f29f0b2ddfe7ec810bd6d558765d9a6a6c" "0fe9f7a04e7a00ad99ecacc875c8ccb4153204e29d3e57e9669691e6ed8340ce" "afe5e2fb3b1e295e11c3c22e7d9ea7288a605c110363673987c8f6d05b1e9972" "7d937147c6dcb7b7693b98cb34af3fa024083c97167e6909c611ddc05b578034" "9d54f3a9cf99c3ffb6ac8e84a89e8ed9b8008286a81ef1dbd48d24ec84efb2f1" "4a9f595fbffd36fe51d5dd3475860ae8c17447272cf35eb31a00f9595c706050" "a7928e99b48819aac3203355cbffac9b825df50d2b3347ceeec1e7f6b592c647" "846ef3695c42d50347884515f98cc359a7a61b82a8d0c168df0f688cf54bf089" "837f2d1e6038d05f29bbcc0dc39dbbc51e5c9a079e8ecd3b6ef09fc0b149ceb1" "dc677c8ebead5c0d6a7ac8a5b109ad57f42e0fe406e4626510e638d36bcc42df" "82b5e8962e15b145fe0c37612ef44b1fec025cf2aa6af31c87d0b37f8b5ae6e0" "32fd809c28baa5813b6ca639e736946579159098d7768af6c68d78ffa32063f4" default))
+ '(fci-rule-color "#555556")
  '(horizontal-scroll-bar-mode nil)
+ '(jdee-db-active-breakpoint-face-colors (cons "#1B2229" "#fd971f"))
+ '(jdee-db-requested-breakpoint-face-colors (cons "#1B2229" "#b6e63e"))
+ '(jdee-db-spec-breakpoint-face-colors (cons "#1B2229" "#525254"))
  '(lsp-ui-doc-alignment 'window)
  '(lsp-ui-doc-border "#1c1e1f")
  '(lsp-ui-doc-delay 0.5)
@@ -601,7 +833,6 @@
  '(lsp-ui-doc-position 'top)
  '(lsp-ui-doc-use-childframe t)
  '(lsp-ui-doc-use-webkit nil)
- '(lsp-ui-flycheck-enable nil)
  '(lsp-ui-sideline-delay 0.1)
  '(lsp-ui-sideline-diagnostic-max-line-length 100)
  '(lsp-ui-sideline-diagnostic-max-lines 20)
@@ -612,14 +843,40 @@
  '(lsp-ui-sideline-show-hover t)
  '(lsp-ui-sideline-show-symbol nil)
  '(lsp-ui-sideline-update-mode 'point)
+ '(objed-cursor-color "#e74c3c")
  '(org-agenda-files '("~/Documents/org/agenda.org"))
- '(scroll-bar-mode nil))
+ '(pdf-view-midnight-colors (cons "#d6d6d4" "#1c1e1f"))
+ '(scroll-bar-mode nil)
+ '(vc-annotate-background "#1c1e1f")
+ '(vc-annotate-color-map
+   (list
+    (cons 20 "#b6e63e")
+    (cons 40 "#c4db4e")
+    (cons 60 "#d3d15f")
+    (cons 80 "#e2c770")
+    (cons 100 "#ebb755")
+    (cons 120 "#f3a73a")
+    (cons 140 "#fd971f")
+    (cons 160 "#fc723b")
+    (cons 180 "#fb4d57")
+    (cons 200 "#fb2874")
+    (cons 220 "#f43461")
+    (cons 240 "#ed404e")
+    (cons 260 "#e74c3c")
+    (cons 280 "#c14d41")
+    (cons 300 "#9c4f48")
+    (cons 320 "#77504e")
+    (cons 340 "#555556")
+    (cons 360 "#555556")))
+ '(vc-annotate-very-old-color nil))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(fixed-pitch ((t (:family "Hack" :slant normal :weight light :height 135 :width normal))))
  '(lsp-ui-doc-background ((t (:background "#1c1e1f" :foreground "DimGrey" :weight semi-light :width normal))))
  '(lsp-ui-sideline-current-symbol ((t (:foreground "DimGray" :box (:line-width -1 :color "background at point") :weight ultra-bold :height 0.99))))
  '(lsp-ui-sideline-global ((t nil)))
- '(lsp-ui-sideline-symbol-info ((t (:background "background at point" :foreground "DimGrey" :slant italic :height 0.99)))))
+ '(lsp-ui-sideline-symbol-info ((t (:background "background at point" :foreground "DimGrey" :slant italic :height 0.99))))
+ '(variable-pitch ((t (:family "Montserrat" :height 160)))))
