@@ -38,7 +38,7 @@
 ;; Constants
 (setq user-full-name "Sam Heaton"
       user-login-name "heat"
-      user-mail-address "heatonsam@gmail.com"
+      user-mail-address ""
       user-emacs-directory "~/.emacs.d"
 
       ;; Backups, autosave
