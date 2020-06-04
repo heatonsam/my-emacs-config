@@ -22,7 +22,7 @@
 (auto-compile-on-save-mode)
 
 ;; Window size
-(when window-system (set-frame-size (selected-frame) 300 200))
+;; (when window-system (set-frame-size (selected-frame) 150 200))
 
 ;; Custom Functions
 
@@ -73,7 +73,9 @@
 
       ;; Formatting
       ;; indent-line-function 'insert-tab
-      sentence-end-double-space nil)
+      sentence-end-double-space nil
+      gc-cons-threshold 100000000
+      read-process-output-max (* 1024 1024)) ; 1mb
 
 (customize-set-variable 'scroll-bar-mode nil)
 (customize-set-variable 'horizontal-scroll-bar-mode nil)
@@ -114,11 +116,30 @@
 (add-hook 'text-mode-hook 'turn-on-visual-line-mode) ; Text wrap
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 (add-hook 'find-file-hook 'save-place-reposition t)
+(add-hook 'eww-mode-hook 'set-buffer-variable-pitch)
+(add-hook 'markdown-mode-hook 'set-buffer-variable-pitch)
+(add-hook 'Info-mode-hook 'set-buffer-variable-pitch)
+
 (add-hook 'prog-mode-hook ; Font
           (lambda ()
             (set-face-attribute 'default nil
-                                :font "Hack"
+                                :font "Deja Vu Sans Mono"
                                 :height 135)))
+
+;; Font
+(custom-theme-set-faces
+ 'user
+ '(variable-pitch ((t (:family "DejaVu Sans 13" :height 140 :weight light)))) ;:weight medium
+ '(fixed-pitch ((t (:family "DejaVu Sans Mono 14" :slant normal :weight light :height 150))))) ;:width normal
+
+(defun set-buffer-variable-pitch ()
+  "Particular settings for variable-pitch buffers (e.g. org)."
+  (interactive)
+  (variable-pitch-mode t)
+  (setq line-spacing 4)
+  (set-face-attribute 'org-table nil :inherit 'fixed-pitch)
+  (set-face-attribute 'org-code nil :inherit 'fixed-pitch)
+  (set-face-attribute 'org-block nil :inherit 'fixed-pitch))
 
 ;; Encoding
 (prefer-coding-system 'utf-8)
@@ -181,6 +202,38 @@
 (straight-use-package 'all-the-icons)
 (straight-use-package 'emojify)
 (straight-use-package 'disable-mouse)
+(straight-use-package 'web-mode)
+(straight-use-package 'js2-mode)
+(straight-use-package 'yaml-mode)
+(straight-use-package 'json-mode)
+(straight-use-package 'clojure-mode)
+(straight-use-package 'anakondo)
+(straight-use-package 'cider)
+(straight-use-package 'flycheck-clj-kondo)
+(straight-use-package 'sass-mode)
+(straight-use-package 'php-mode)
+(straight-use-package 'pip-requirements)
+(straight-use-package 'docker)
+(straight-use-package 'docker-tramp)
+(straight-use-package 'company-jedi)
+(straight-use-package 'dotenv-mode)
+(straight-use-package 'irony)
+(straight-use-package 'nginx-mode)
+(straight-use-package 'py-autopep8)
+(straight-use-package 'yasnippet)
+(straight-use-package 'lsp-mode)
+(straight-use-package 'lsp-treemacs)
+(straight-use-package 'hydra)
+(straight-use-package 'company-lsp)
+(straight-use-package 'lsp-ui)
+(straight-use-package 'lsp-java)
+(straight-use-package 'dap-mode)
+(straight-use-package 'helm-lsp)
+(straight-use-package 'org-bullets)
+(straight-use-package 'flycheck-inline)
+(straight-use-package 'flycheck-status-emoji)
+(straight-use-package 'org-pomodoro)
+(straight-use-package 'org-journal)
 
 ;; Package settings
 
@@ -260,10 +313,8 @@
 ;; #########################################
 
 (global-flycheck-mode)
-(straight-use-package 'flycheck-inline)
-(straight-use-package 'flycheck-status-emoji)
 (with-eval-after-load 'flycheck
- (add-hook 'flycheck-mode-hook #'flycheck-inline-mode))
+  (add-hook 'flycheck-mode-hook #'flycheck-inline-mode))
 
 ;; #########################################
 ;; ########### Writeroom settings ##########
@@ -328,6 +379,14 @@
 ;; Keybinds allow using tab for autocomplete in helm-company
 (define-key helm-map (kbd "TAB") #'helm-execute-persistent-action)
 (define-key helm-map (kbd "<tab>") #'helm-execute-persistent-action)
+(setq company-idle-delay 0.2
+      company-minimum-prefix-length 2
+      company-dabbrev-downcase nil
+      company-dabbrev-other-buffers t
+      company-auto-complete nil
+      company-dabbrev-code-other-buffers 'all
+      company-dabbrev-code-everywhere t
+      company-dabbrev-code-ignore-case t)
 
 ;; #########################################
 ;; ###### Aggressive-indent settings #######
@@ -360,6 +419,10 @@
 (load-theme 'doom-molokai t)
 ;; (load-theme 'doom-one)
 
+;; Additional colour tweaks
+(set-face-background 'line-number "#242728")
+(set-face-foreground 'line-number-current-line "#63de5d")
+
 ;; #########################################
 ;; ######## Modeline settings ##############
 ;; #########################################
@@ -378,86 +441,10 @@
 (require 'disable-mouse)
 (global-disable-mouse-mode)
 
-;; Language-specific
-(straight-use-package 'web-mode)
+;; #########################################
+;; ######### Web-mode settings #############
+;; #########################################
 (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
-
-(straight-use-package 'js2-mode)
-(add-to-list 'auto-mode-alist '("\\.js?\\'" . js2-mode))
-(straight-use-package 'yaml-mode)
-(add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode))
-
-(straight-use-package 'vue-mode)
-
-(straight-use-package 'json-mode)
-
-;; Clojure
-(straight-use-package 'clojure-mode)
-(straight-use-package 'anakondo)
-;; Delays loading of anakondo until a clojure buffer is used
-(autoload 'anakondo-minor-mode "anakondo")
-
-(straight-use-package 'cider)
-(setq nrepl-hide-special-buffers t
-      cider-repl-pop-to-buffer-on-connect nil
-      cider-popup-stacktraces nil
-      cider-repl-popup-stacktraces t)
-(straight-use-package 'flycheck-clj-kondo)
-(require 'flycheck-clj-kondo)
-
-;; Enable anakondo-minor-mode in all Clojure buffers
-(add-hook 'clojure-mode-hook #'anakondo-minor-mode)
-;; Enable anakondo-minor-mode in all ClojureScript buffers
-(add-hook 'clojurescript-mode-hook #'anakondo-minor-mode)
-;; Enable anakondo-minor-mode in all cljc buffers
-(add-hook 'clojurec-mode-hook #'anakondo-minor-mode)
-
-(setq company-idle-delay 0.2)
-             (setq company-minimum-prefix-length 2)
-             (setq company-dabbrev-downcase nil)
-             (setq company-dabbrev-other-buffers t)
-                             (setq company-auto-complete nil)
-             (setq company-dabbrev-code-other-buffers 'all)
-             (setq company-dabbrev-code-everywhere t)
-             (setq company-dabbrev-code-ignore-case t)
-
-;; Sass Mode
-(straight-use-package 'sass-mode)
-
-;; PHP
-(straight-use-package 'php-mode)
-
-(straight-use-package 'pip-requirements)
-(straight-use-package 'docker)
-(straight-use-package 'docker-tramp)
-(straight-use-package 'company-jedi)
-(straight-use-package 'dotenv-mode)
-(straight-use-package 'irony)
-(straight-use-package 'nginx-mode)
-(straight-use-package 'py-autopep8)
-(add-hook 'python-mode-hook 'py-autopep8-enable-on-save)
-
-;; LSP (Requires more configuration)
-(straight-use-package 'yasnippet)
-;;(require 'yasnippet)
-;;(yas-global-mode 1)
-(straight-use-package 'lsp-mode)
-;; LSP-MODE settings
-(straight-use-package 'lsp-treemacs)
-(setq gc-cons-threshold 100000000)
-(setq read-process-output-max (* 1024 1024)) ;; 1mb
-
-;(require 'lsp-ui-flycheck)
-;(with-eval-after-load 'lsp-mode
-;   (add-hook 'lsp-after-open-hook (lambda () (lsp-ui-flycheck-enable 1))))
-
-;; Flycheck config
-;; disable jshint since we prefer eslint checking
-(setq-default flycheck-disabled-checkers
-  (append flycheck-disabled-checkers
-          '(javascript-jshint)))
-;; use eslint with web-mode for jsx files
-(flycheck-add-mode 'javascript-eslint 'web-mode)
 ;; adjust indents for web-mode to 2 spaces
 (defun my-web-mode-hook ()
   "Hooks for Web mode. Adjust indent."
@@ -467,124 +454,150 @@
   (setq web-mode-code-indent-offset 2))
 (add-hook 'web-mode-hook  'my-web-mode-hook)
 
-(straight-use-package 'hydra)
-(straight-use-package 'company-lsp)
-(straight-use-package 'lsp-ui)
-(straight-use-package 'lsp-java)
-(straight-use-package 'dap-mode)
-(straight-use-package 'helm-lsp)
+;; #########################################
+;; ######### Js2-mode settings #############
+;; #########################################
+(add-to-list 'auto-mode-alist '("\\.js?\\'" . js2-mode))
+
+;; #########################################
+;; ######### Yaml-mode settings ############
+;; #########################################
+(add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode))
+
+;; #########################################
+;; ######### Akanondo-mode settings ########
+;; #########################################
+;; Delays loading of anakondo until a clojure buffer is used
+(autoload 'anakondo-minor-mode "anakondo")
+
+;; #########################################
+;; ######### Clojure-mode settings #########
+;; #########################################
+(add-hook 'inf-clojure-mode-hook 'clojure-mode-font-lock-setup)
+
+;; #########################################
+;; ######### Cider-mode settings ###########
+;; #########################################
+(setq nrepl-hide-special-buffers t
+      cider-repl-pop-to-buffer-on-connect nil
+      cider-popup-stacktraces nil
+      cider-repl-popup-stacktraces t)
+
+;; #########################################
+;; ##### Flycheck-clj-kondo settings #######
+;; #########################################
+(require 'flycheck-clj-kondo)
+
+;; #########################################
+;; ######## Anakondo-mode settings #########
+;; #########################################
+;; Enable anakondo-minor-mode in all Clojure buffers
+(add-hook 'clojure-mode-hook #'anakondo-minor-mode)
+;; Enable anakondo-minor-mode in all ClojureScript buffers
+(add-hook 'clojurescript-mode-hook #'anakondo-minor-mode)
+;; Enable anakondo-minor-mode in all cljc buffers
+(add-hook 'clojurec-mode-hook #'anakondo-minor-mode)
+
+;; #########################################
+;; ######### Python-mode settings ##########
+;; #########################################
+(add-hook 'python-mode-hook 'py-autopep8-enable-on-save)
+
+;; #########################################
+;; ########## LSP-mode settings ############
+;; #########################################
 (add-hook 'prog-mode-hook #'lsp)
 (add-hook 'lsp-mode-hook 'lsp-ui-mode)
 
-;; Fonts
+;; #########################################
+;; ######## Yasnippet-mode settings ########
+;; #########################################
 
-;; Unused
-;; (straight-use-package 'highlight-thing)
-;; (add-hook 'prog-mode-hook 'highlight-thing-mode)
-;; (straight-use-package 'highlight-indent-guides)
-;; (add-hook 'prog-mode-hook 'highlight-indent-guides-mode)
-;; (setq highlight-indent-guides-method 'column)
+;; #########################################
+;; ######### Flycheck settings #############
+;; #########################################
+;; disable jshint since we prefer eslint checking
+(setq-default flycheck-disabled-checkers
+              (append flycheck-disabled-checkers
+                      '(javascript-jshint)))
+;; use eslint with web-mode for jsx files
+(flycheck-add-mode 'javascript-eslint 'web-mode)
 
-;; Org mode
-(straight-use-package 'org-bullets)
+;; #########################################
+;; ######### Org-mode settings #############
+;; #########################################
 (defun org-mode-stuff ()
-            ;; misc
-            ;; (setq left-margin-width 2)
-            ;; (setq right-margin-width 2)
-            ;; (set-window-buffer nil (current-buffer))
-            (writeroom-mode)
-            ;; (require 'org-tempo)
-            (require 'ob-clojure)
-            (require 'ob-java)
-            (org-bullets-mode 1)
-            (visual-line-mode)
-            (org-indent-mode)
-            ;; (setq header-line-format " ")
-            ;;(variable-pitch-mode 1)
-            ;;(setq header-line-format " ")
-            ;;
-            (local-set-key "\M-n" 'outline-next-visible-heading)
-            (local-set-key "\M-p" 'outline-previous-visible-heading)
-            ;; table
-            (local-set-key "\C-\M-w" 'org-table-copy-region)
-            (local-set-key "\C-\M-y" 'org-table-paste-rectangle)
-            (local-set-key "\C-\M-l" 'org-table-sort-lines)
-            ;; display images
-            (local-set-key "\M-I" 'org-toggle-image-in-org)
-            ;; fix tab
-            (local-set-key "\C-y" 'yank))
-
-(custom-theme-set-faces
- 'user
- '(variable-pitch ((t (:family "DejaVu Sans Mono 13" :height 140 :weight light)))) ;:weight medium
- '(fixed-pitch ((t (:family "DejaVu Sans Mono 13" :slant normal :weight light :height 150))))) ;:width normal
-
-  (defun set-buffer-variable-pitch ()
-    (interactive)
-    (variable-pitch-mode t)
-    (setq line-spacing 4)
-    (set-face-attribute 'org-table nil :inherit 'fixed-pitch)
-    (set-face-attribute 'org-code nil :inherit 'fixed-pitch)
-    (set-face-attribute 'org-block nil :inherit 'fixed-pitch)
-    ;; (auto-complete-mode -1)
-    ;; (set-face-attribute 'org-block-background nil :inherit 'fixed-pitch)
-    )
+  ;; misc
+  ;; (setq left-margin-width 2)
+  ;; (setq right-margin-width 2)
+  ;; (set-window-buffer nil (current-buffer))
+  (writeroom-mode)
+  ;; (require 'org-tempo)
+  (require 'ob-clojure)
+  (require 'ob-java)
+  (org-bullets-mode 1)
+  (visual-line-mode)
+  (org-indent-mode)
+  ;; (setq header-line-format " ")
+  ;;(variable-pitch-mode 1)
+  ;;(setq header-line-format " ")
+  ;;
+  (local-set-key "\M-n" 'outline-next-visible-heading)
+  (local-set-key "\M-p" 'outline-previous-visible-heading)
+  ;; table
+  (local-set-key "\C-\M-w" 'org-table-copy-region)
+  (local-set-key "\C-\M-y" 'org-table-paste-rectangle)
+  (local-set-key "\C-\M-l" 'org-table-sort-lines)
+  ;; display images
+  (local-set-key "\M-I" 'org-toggle-image-in-org)
+  ;; fix tab
+  (local-set-key "\C-y" 'yank))
 
 (add-hook 'org-mode-hook
-(lambda ()
-  (org-mode-stuff)
-  (set-buffer-variable-pitch)))
+          (lambda ()
+            (org-mode-stuff)
+            (set-buffer-variable-pitch)))
 
-  (add-hook 'eww-mode-hook 'set-buffer-variable-pitch)
-  (add-hook 'markdown-mode-hook 'set-buffer-variable-pitch)
-  (add-hook 'Info-mode-hook 'set-buffer-variable-pitch)
-
-(setq org-src-fontify-natively t)
-(setq org-babel-clojure-backend 'cider)
-;(set-face-attribute 'org-indent nil :inherit '(org-hide fixed-pitch))
-(setq org-ellipsis "  ")
-(setq org-hide-emphasis-markers t)
-(setq org-fontify-whole-heading-line t)
-(setq org-agenda-block-separator "")
-(setq org-fontify-done-headline t)
-(setq org-fontify-quote-and-verse-blocks t)
-(setq org-bullets-bullet-list '("⬢" "◆" "▲" "■"))
-(setq org-tags-column 0)
-(setq org-src-fontify-natively t)
-(setq org-edit-src-content-indentation 0)
-(setq org-src-tab-acts-natively t)
-(setq org-confirm-babel-evaluate nil)
-(setq org-src-preserve-indentation t)
-
-(straight-use-package 'org-pomodoro)
-(setq org-directory (expand-file-name "~/Documents/org"))
-(setq org-default-notes-file (concat org-directory "/mygtd.org"))
-(setq org-agenda-files '("~/Documents/org" "~/Documents/org/html" "~/Documents/org/html/_org"))
-(setq org-edit-src-content-indentation 0
+;; Org-mode constants
+(setq org-src-tab-acts-natively t
+      org-src-fontify-natively t
+      org-babel-clojure-backend 'cider
+      org-ellipsis "  "
+      org-fontify-whole-heading-line t
+      org-hide-emphasis-markers t
+      org-agenda-block-separator ""
+      org-fontify-done-headline t
+      org-fontify-quote-and-verse-blocks t
+      org-bullets-bullet-list '("⬢" "◆" "▲" "■")
+      org-tags-column 0
+      org-src-fontify-natively t
+      org-edit-src-content-indentation 0
+      org-confirm-babel-evaluate nil
+      org-src-preserve-indentation t
+      org-directory (expand-file-name "~/Documents/org")
+      org-agenda-files '("~/Documents/org" "~/Documents/org/html" "~/Documents/org/html/_org")
+      org-default-notes-file (concat org-directory "/mygtd.org")
+      org-edit-src-content-indentation 0
       org-src-tab-acts-natively t
       org-src-fontify-natively t
-      org-confirm-babel-evaluate nil)
-
-;; A lot taken from http://www.i3s.unice.fr/~malapert/emacs_orgmode.html
-; and https://orgmode.org/worg/org-configs/org-config-examples.html
-
-(setq org-todo-keywords
-      '(
-        (sequence "IDEA(i)" "TODO(t)" "STARTED(s)" "NEXT(n)" "WAITING(w)" "|" "DONE(d)")
-        (sequence "|" "CANCELED(c)" "DELEGATED(l)" "SOMEDAY(f)")
-        ))
-
-(setq org-todo-keyword-faces
+      org-fast-tag-selection-single-key t
+      org-use-fast-todo-selection t
+      org-confirm-babel-evaluate nil
+      org-html-htmlize-output-type 'css
+      ;; A lot taken from http://www.i3s.unice.fr/~malapert/emacs_orgmode.html
+      ;; and https://orgmode.org/worg/org-configs/org-config-examples.html
+      org-todo-keywords
+      '((sequence "IDEA(i)" "TODO(t)" "STARTED(s)" "NEXT(n)" "WAITING(w)" "|" "DONE(d)")
+        (sequence "|" "CANCELED(c)" "DELEGATED(l)" "SOMEDAY(f)"))
+      org-todo-keyword-faces
       '(("IDEA" . (:foreground "GoldenRod" :weight bold))
         ("NEXT" . (:foreground "IndianRed1" :weight bold))
         ("STARTED" . (:foreground "OrangeRed" :weight bold))
         ("WAITING" . (:foreground "coral" :weight bold))
         ("CANCELED" . (:foreground "LimeGreen" :weight bold))
         ("DELEGATED" . (:foreground "LimeGreen" :weight bold))
-        ("SOMEDAY" . (:foreground "LimeGreen" :weight bold))
-        ))
-
-(setq org-tag-persistent-alist
+        ("SOMEDAY" . (:foreground "LimeGreen" :weight bold)))
+      org-tag-persistent-alist
       '((:startgroup . nil)
         ("HOME" . ?h)
         ("RESEARCH" . ?r)
@@ -603,13 +616,9 @@
         ("URGENT" . ?u)
         ("KEY" . ?k)
         ("BONUS" . ?b)
-        ("noexport" . ?x)
-        )
-      )
-
-(setq org-tag-faces
-      '(
-        ("HOME" . (:foreground "GoldenRod" :weight bold))
+        ("noexport" . ?x))
+      org-tag-faces
+      '(("HOME" . (:foreground "GoldenRod" :weight bold))
         ("RESEARCH" . (:foreground "GoldenRod" :weight bold))
         ("TEACHING" . (:foreground "GoldenRod" :weight bold))
         ("OS" . (:foreground "IndianRed1" :weight bold))
@@ -621,45 +630,41 @@
         ("MEDIUM" . (:foreground "OrangeRed" :weight bold))
         ("HARD" . (:foreground "OrangeRed" :weight bold))
         ("BONUS" . (:foreground "GoldenRod" :weight bold))
-        ("noexport" . (:foreground "LimeGreen" :weight bold))
-        )
-      )
-
-;; Don't know what this does yet search the variables
-(setq org-fast-tag-selection-single-key t)
-(setq org-use-fast-todo-selection t)
-
-;; Template for linking to files basically?
-(setq org-reverse-note-order t)
-(setq org-capture-templates
+        ("noexport" . (:foreground "LimeGreen" :weight bold)))
+      org-reverse-note-order t
+      org-capture-templates
       '(("t" "Todo" entry (file+headline "~/org/mygtd.org" "Tasks")
          "* TODO %?\nAdded: %U\n" :prepend t :kill-buffer t)
         ("i" "Idea" entry (file+headline "~/org/mygtd.org" "Someday/Maybe")
-         "* IDEA %?\nAdded: %U\n" :prepend t :kill-buffer t)
-        )
-      )
+         "* IDEA %?\nAdded: %U\n" :prepend t :kill-buffer t))
+      org-src-fontify-natively t
+      org-src-tab-acts-natively t
+      org-ascii-headline-spacing (quote (1 . 1))
+      org-html-coding-system 'utf-8-unix)
 
-(setq org-html-htmlize-output-type 'css)
+;; Export org-mode files to GitHub Markdown.
+(eval-after-load "org"
+  '(require 'ox-gfm nil t))
 
 (define-skeleton org-skeleton
   "Header info for a emacs-org file."
   "Title: "
   "#+TITLE:" str " \n"
   "#+AUTHOR: Sam Heaton\n"
-  ;"#+email: your-email@server.com\n"
+                                        ;"#+email: your-email@server.com\n"
   "#+INFOJS_OPT: \n"
   "#+BABEL: :session *R* :cache yes :results output graphics :exports both :tangle yes \n"
-  "-----"
- )
+  "-----")
 (global-set-key [C-S-f4] 'org-skeleton)
 
-(add-hook 'inf-clojure-mode-hook 'clojure-mode-font-lock-setup)
+;; #########################################
+;; ######### Org-babel settings ############
+;; #########################################
 
-; activate specific org-babel languages
+;; activate specific org-babel languages
 (org-babel-do-load-languages
  'org-babel-load-languages
- '(
-   (emacs-lisp . t)
+ '((emacs-lisp . t)
    (clojure . t)
    (org . t)
    (shell . t)
@@ -670,93 +675,14 @@
    (octave . t)
    (R . t)
    (js . t)
-   (awk . t)
-   ))
+   (awk . t)))
 
-;; ???
-;(setq ns-use-thin-smoothing t)
-
-;; Not quite sure
-(setq org-src-fontify-natively t)
-(setq org-src-tab-acts-natively t)
-
-; Adjust the number of blank lines inserted around headlines
-(setq org-ascii-headline-spacing (quote (1 . 1)))
-
-(eval-after-load "org"
-  '(require 'ox-gfm nil t))
-(setq org-html-coding-system 'utf-8-unix)
-
-;; ;; GLOBAL Keybindings that can be added to .emacs
-;; (global-set-key [f4] 'org-capture)
-;; (global-set-key [f5] '(lambda () (interactive)(find-file "~/org/mygtd.org")))
-;; (global-set-key [f6] 'org-todo-list)
-;; ;; (global-set-key [f7] 'org-agenda)
-
-
-;; (setq org-capture-templates
-;;       '(("c" "Cookbook" entry (file "~/org/cookbook.org")
-;;          "%(org-chef-get-recipe-from-url)"
-;;          :empty-lines 1)
-;;         ("m" "Manual Cookbook" entry (file "~/org/cookbook.org")
-;;          "* %^{Recipe title: }\n  :PROPERTIES:\n  :source-url:\n  :servings:\n  :prep-time:\n  :cook-time:\n  :ready-in:\n  :END:\n** Ingredients\n   %?\n** Directions\n\n")))
-
-;; (straight-use-package 'org-brain)
-;; (setq org-brain-path "~/Documents/org")
-
-;; (defun org-brain-settings
-;; 		"Misc settings."
-;; 	(setq org-id-track-globally t)
-;; 	(setq org-id-locations-file "~/.emacs.d/.org-id-locations")
-;; 	(push '("b" "Brain" plain (function org-brain-goto-end)
-;; 					"* %i%?" :empty-lines 1)
-;; 				org-capture-templates)
-;; 	(setq org-brain-visualize-default-choices 'all)
-;; 	(setq org-brain-title-max-length 12)
-;; 	(setq org-brain-include-file-entries nil
-;; 				org-brain-file-entries-use-title nil))
-
-;; (add-hook 'org-brain-settings-hook #'org-brain-mode)
-
-;; (defface aa2u-face '((t . nil))
-;;   "Face for aa2u box drawing characters")
-;; (advice-add #'aa2u-1c :filter-return
-;;             (lambda (str) (propertize str 'face 'aa2u-face)))
-;; (defun aa2u-org-brain-buffer ()
-;;   (let ((inhibit-read-only t))
-;;     (make-local-variable 'face-remapping-alist)
-;;     (add-to-list 'face-remapping-alist
-;;                  '(aa2u-face . org-brain-wires))
-;;     (ignore-errors (aa2u (point-min) (point-max)))))
-;; (with-eval-after-load 'org-brain
-;;   (add-hook 'org-brain-after-visualize-hook #'aa2u-org-brain-buffer))
-
-;; (defun org-brain-insert-resource-icon (link)
-;;   "Insert an icon, based on content of 'org-mode' LINK."
-;;   (insert (format "%s "
-;;                   (cond ((string-prefix-p "brain:" link)
-;;                          (all-the-icons-fileicon "brain"))
-;;                         ((string-prefix-p "info:" link)
-;;                          (all-the-icons-octicon "info"))
-;;                         ((string-prefix-p "help:" link)
-;;                          (all-the-icons-material "help"))
-;;                         ((string-prefix-p "http" link)
-;;                          (all-the-icons-icon-for-url link))
-;;                         (t
-;;                          (all-the-icons-icon-for-file link))))))
-
-;; (add-hook 'org-brain-after-resource-button-functions #'org-brain-insert-resource-icon)
-
-;; (setq org-agenda-category-icon-alist
-;;       `(("computers" ,(list (all-the-icons-material "computer")) nil nil :ascent center)
-;;         ("books" ,(list (all-the-icons-faicon "book")) nil nil :ascent center)))
-
-(straight-use-package 'org-journal)
-
-(set-face-background 'line-number "#242728")
-(set-face-foreground 'line-number-current-line "#63de5d")
-
-;; Experimental - styling company autocomplete
+;; Unused
+;; (straight-use-package 'highlight-thing)
+;; (add-hook 'prog-mode-hook 'highlight-thing-mode)
+;; (straight-use-package 'highlight-indent-guides)
+;; (add-hook 'prog-mode-hook 'highlight-indent-guides-mode)
+;; (setq highlight-indent-guides-method 'column)
 
 ;;; emacs-config.el ends here
 (custom-set-variables
