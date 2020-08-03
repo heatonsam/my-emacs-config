@@ -206,11 +206,10 @@
 (straight-use-package 'disable-mouse)
 (straight-use-package 'web-mode)
 (straight-use-package 'js2-mode)
+(straight-use-package 'rjsx-mode)
 (straight-use-package 'yaml-mode)
 (straight-use-package 'json-mode)
 (straight-use-package 'clojure-mode)
-(straight-use-package 'clojure-essential-ref)
-(straight-use-package 'cider-clojuredocs-web)
 (straight-use-package 'anakondo)
 (straight-use-package 'cider)
 (straight-use-package 'flycheck-clj-kondo)
@@ -246,6 +245,7 @@
 (straight-use-package 'page-break-lines)
 (straight-use-package 'dashboard)
 (straight-use-package 'gcmh)
+(straight-use-package 'golden-ratio)
 
 ;; Package settings
 
@@ -549,6 +549,18 @@
 (setq olivetti-minimum-body-width 72)
 (setq olivetti-recall-visual-line-mode-entry-state t)
 
+;; #########################################
+;; ######### Windmove settings #############
+;; #########################################
+(global-set-key [s-left] (ignore-error-wrapper 'windmove-left))
+(global-set-key [s-right] (ignore-error-wrapper 'windmove-right))
+(global-set-key [s-up] (ignore-error-wrapper 'windmove-up))
+(global-set-key [s-down] (ignore-error-wrapper 'windmove-down))
+
+;; #########################################
+;; ######### Golden ratio settings #########
+;; #########################################
+(golden-ratio-mode 1)
 
 ;; #########################################
 ;; ######### Org-mode settings #############
@@ -624,6 +636,8 @@ current window."
       org-use-fast-todo-selection t
       org-confirm-babel-evaluate nil
       org-html-htmlize-output-type 'css
+      org-clock-into-drawer t
+      org-clock-persist t
       ;; A lot taken from http://www.i3s.unice.fr/~malapert/emacs_orgmode.html
       ;; and https://orgmode.org/worg/org-configs/org-config-examples.html
       org-todo-keywords
@@ -733,7 +747,7 @@ current window."
  '(ansi-color-names-vector
    ["#1c1e1f" "#e74c3c" "#b6e63e" "#e2c770" "#268bd2" "#fb2874" "#66d9ef" "#d6d6d4"])
  '(custom-safe-themes
-   '("c433c87bd4b64b8ba9890e8ed64597ea0f8eb0396f4c9a9e01bd20a04d15d358" "2809bcb77ad21312897b541134981282dc455ccd7c14d74cc333b6e549b824f3" "488e77bdde580d8fc5aeecccd882fea86c80d0cb372f1dde2b458e81e328795b" "dff5f62b0ac5e63e0c7f762007d3a430b8cea391afe7a1acb225cafa115f777c" "e1ecb0536abec692b5a5e845067d75273fe36f24d01210bf0aa5842f2a7e029f" "99ea831ca79a916f1bd789de366b639d09811501e8c092c85b2cb7d697777f93" "e074be1c799b509f52870ee596a5977b519f6d269455b84ed998666cf6fc802a" "fa2b58bb98b62c3b8cf3b6f02f058ef7827a8e497125de0254f56e373abee088" "4daff0f7fb02c7a4d5766a6a3e0931474e7c4fd7da58687899485837d6943b78" "be9645aaa8c11f76a10bcf36aaf83f54f4587ced1b9b679b55639c87404e2499" "e47c0abe03e0484ddadf2ae57d32b0f29f0b2ddfe7ec810bd6d558765d9a6a6c" "0fe9f7a04e7a00ad99ecacc875c8ccb4153204e29d3e57e9669691e6ed8340ce" "afe5e2fb3b1e295e11c3c22e7d9ea7288a605c110363673987c8f6d05b1e9972" "7d937147c6dcb7b7693b98cb34af3fa024083c97167e6909c611ddc05b578034" "9d54f3a9cf99c3ffb6ac8e84a89e8ed9b8008286a81ef1dbd48d24ec84efb2f1" "4a9f595fbffd36fe51d5dd3475860ae8c17447272cf35eb31a00f9595c706050" "a7928e99b48819aac3203355cbffac9b825df50d2b3347ceeec1e7f6b592c647" "846ef3695c42d50347884515f98cc359a7a61b82a8d0c168df0f688cf54bf089" "837f2d1e6038d05f29bbcc0dc39dbbc51e5c9a079e8ecd3b6ef09fc0b149ceb1" "dc677c8ebead5c0d6a7ac8a5b109ad57f42e0fe406e4626510e638d36bcc42df" "82b5e8962e15b145fe0c37612ef44b1fec025cf2aa6af31c87d0b37f8b5ae6e0" "32fd809c28baa5813b6ca639e736946579159098d7768af6c68d78ffa32063f4" default))
+   '("0cb1b0ea66b145ad9b9e34c850ea8e842c4c4c83abe04e37455a1ef4cc5b8791" "c433c87bd4b64b8ba9890e8ed64597ea0f8eb0396f4c9a9e01bd20a04d15d358" "2809bcb77ad21312897b541134981282dc455ccd7c14d74cc333b6e549b824f3" "488e77bdde580d8fc5aeecccd882fea86c80d0cb372f1dde2b458e81e328795b" "dff5f62b0ac5e63e0c7f762007d3a430b8cea391afe7a1acb225cafa115f777c" "e1ecb0536abec692b5a5e845067d75273fe36f24d01210bf0aa5842f2a7e029f" "99ea831ca79a916f1bd789de366b639d09811501e8c092c85b2cb7d697777f93" "e074be1c799b509f52870ee596a5977b519f6d269455b84ed998666cf6fc802a" "fa2b58bb98b62c3b8cf3b6f02f058ef7827a8e497125de0254f56e373abee088" "4daff0f7fb02c7a4d5766a6a3e0931474e7c4fd7da58687899485837d6943b78" "be9645aaa8c11f76a10bcf36aaf83f54f4587ced1b9b679b55639c87404e2499" "e47c0abe03e0484ddadf2ae57d32b0f29f0b2ddfe7ec810bd6d558765d9a6a6c" "0fe9f7a04e7a00ad99ecacc875c8ccb4153204e29d3e57e9669691e6ed8340ce" "afe5e2fb3b1e295e11c3c22e7d9ea7288a605c110363673987c8f6d05b1e9972" "7d937147c6dcb7b7693b98cb34af3fa024083c97167e6909c611ddc05b578034" "9d54f3a9cf99c3ffb6ac8e84a89e8ed9b8008286a81ef1dbd48d24ec84efb2f1" "4a9f595fbffd36fe51d5dd3475860ae8c17447272cf35eb31a00f9595c706050" "a7928e99b48819aac3203355cbffac9b825df50d2b3347ceeec1e7f6b592c647" "846ef3695c42d50347884515f98cc359a7a61b82a8d0c168df0f688cf54bf089" "837f2d1e6038d05f29bbcc0dc39dbbc51e5c9a079e8ecd3b6ef09fc0b149ceb1" "dc677c8ebead5c0d6a7ac8a5b109ad57f42e0fe406e4626510e638d36bcc42df" "82b5e8962e15b145fe0c37612ef44b1fec025cf2aa6af31c87d0b37f8b5ae6e0" "32fd809c28baa5813b6ca639e736946579159098d7768af6c68d78ffa32063f4" default))
  '(fci-rule-color "#555556")
  '(horizontal-scroll-bar-mode nil)
  '(jdee-db-active-breakpoint-face-colors (cons "#1B2229" "#fd971f"))
@@ -789,9 +803,9 @@ current window."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(fixed-pitch ((t (:family "DejaVu Sans Mono 13" :slant normal :weight light :height 150))))
+ '(fixed-pitch ((t (:family "DejaVu Sans Mono 14" :slant normal :weight light :height 150))))
  '(lsp-ui-doc-background ((t (:background "#1c1e1f" :foreground "DimGrey" :weight semi-light :width normal))))
  '(lsp-ui-sideline-current-symbol ((t (:foreground "DimGray" :box (:line-width -1 :color "background at point") :weight ultra-bold :height 0.99))))
  '(lsp-ui-sideline-global ((t nil)))
  '(lsp-ui-sideline-symbol-info ((t (:background "background at point" :foreground "DimGrey" :slant italic :height 0.99))))
- '(variable-pitch ((t (:family "DejaVu Sans Mono 13" :height 140 :weight light)))))
+ '(variable-pitch ((t (:family "DejaVu Sans 13" :height 140 :weight light)))))
