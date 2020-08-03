@@ -198,6 +198,8 @@
 (straight-use-package 'darkokai-theme)
 (straight-use-package 'mood-one-theme)
 (straight-use-package 'atom-one-dark-theme)
+(straight-use-package 'modus-operandi-theme)
+(straight-use-package 'modus-vivendi-theme)
 (straight-use-package 'doom-modeline)
 (straight-use-package 'all-the-icons)
 (straight-use-package 'emojify)
@@ -207,6 +209,8 @@
 (straight-use-package 'yaml-mode)
 (straight-use-package 'json-mode)
 (straight-use-package 'clojure-mode)
+(straight-use-package 'clojure-essential-ref)
+(straight-use-package 'cider-clojuredocs-web)
 (straight-use-package 'anakondo)
 (straight-use-package 'cider)
 (straight-use-package 'flycheck-clj-kondo)
@@ -220,6 +224,7 @@
 (straight-use-package 'irony)
 (straight-use-package 'nginx-mode)
 (straight-use-package 'py-autopep8)
+(straight-use-package 'elpy)
 (straight-use-package 'yasnippet)
 (straight-use-package 'lsp-mode)
 (straight-use-package 'lsp-treemacs)
@@ -234,6 +239,13 @@
 (straight-use-package 'flycheck-status-emoji)
 (straight-use-package 'org-pomodoro)
 (straight-use-package 'org-journal)
+(straight-use-package 'olivetti)
+(straight-use-package 'quickrun)
+(straight-use-package 'ox-hugo)
+(straight-use-package 'freeze-it)
+(straight-use-package 'page-break-lines)
+(straight-use-package 'dashboard)
+(straight-use-package 'gcmh)
 
 ;; Package settings
 
@@ -502,6 +514,7 @@
 ;; ######### Python-mode settings ##########
 ;; #########################################
 (add-hook 'python-mode-hook 'py-autopep8-enable-on-save)
+(elpy-enable)
 
 ;; #########################################
 ;; ########## LSP-mode settings ############
@@ -524,17 +537,44 @@
 (flycheck-add-mode 'javascript-eslint 'web-mode)
 
 ;; #########################################
+;; ############# gcmh settings #############
+;; #########################################
+(require 'gcmh)
+(gcmh-mode 1)
+
+;; #########################################
+;; ######### Olivetti-mode settings ########
+;; #########################################
+(setq olivetti-body-width 0.65)
+(setq olivetti-minimum-body-width 72)
+(setq olivetti-recall-visual-line-mode-entry-state t)
+
+
+;; #########################################
 ;; ######### Org-mode settings #############
 ;; #########################################
+(defun mode-line-align (left right)
+  "Return a string with LEFT and RIGHT at the edges of the
+current window."
+  (format (format "%%s %%%ds" (- (window-total-width) (length left) 2))
+          left right))
+
 (defun org-mode-stuff ()
   ;; misc
   ;; (setq left-margin-width 2)
   ;; (setq right-margin-width 2)
   ;; (set-window-buffer nil (current-buffer))
-  (writeroom-mode)
+  ;; (writeroom-mode)
   ;; (require 'org-tempo)
   (require 'ob-clojure)
   (require 'ob-java)
+  (require 'olivetti)
+  (:eval
+   (mode-line-align
+    (format-mode-line
+     (list " " mode-line-buffer-identification " " mode-line-modified " " mode-name))
+    (format-mode-line
+     (list minor-mode-alist " " mode-line-misc-info))))
   (org-bullets-mode 1)
   (visual-line-mode)
   (org-indent-mode)
