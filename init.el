@@ -409,6 +409,7 @@
 ;; ####### Smartparens-mode settings #######
 ;; #########################################
 (add-hook 'prog-mode-hook #'smartparens-mode)
+(setq sp-use-paredit-bindings t)
 
 ;; #########################################
 ;; ###### Rainbow-delimiters settings ######
@@ -552,10 +553,11 @@
 ;; #########################################
 ;; ######### Windmove settings #############
 ;; #########################################
-(global-set-key [s-left] (ignore-error-wrapper 'windmove-left))
-(global-set-key [s-right] (ignore-error-wrapper 'windmove-right))
-(global-set-key [s-up] (ignore-error-wrapper 'windmove-up))
-(global-set-key [s-down] (ignore-error-wrapper 'windmove-down))
+;; From https://www.emacswiki.org/emacs/WindMove
+(global-set-key [S-left] 'windmove-left)
+(global-set-key [S-right] 'windmove-right)
+(global-set-key [S-up] 'windmove-up)
+(global-set-key [S-down] 'windmove-down)
 
 ;; #########################################
 ;; ######### Golden ratio settings #########
