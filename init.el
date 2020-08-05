@@ -73,6 +73,7 @@
 
       ;; Formatting
       ;; indent-line-function 'insert-tab
+      line-spacing 2
       sentence-end-double-space nil
       gc-cons-threshold 100000000
       read-process-output-max (* 1024 1024)) ; 1mb
@@ -111,27 +112,16 @@
 (global-hl-line-mode 1)
 (global-subword-mode 1)
 (global-visual-line-mode t)
+(global-display-line-numbers-mode t)
 
 ;; Hooks
-(add-hook 'prog-mode-hook #'display-line-numbers-mode)
+;; (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 (add-hook 'text-mode-hook 'turn-on-visual-line-mode) ; Text wrap
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 (add-hook 'find-file-hook 'save-place-reposition t)
 (add-hook 'eww-mode-hook 'set-buffer-variable-pitch)
 (add-hook 'markdown-mode-hook 'set-buffer-variable-pitch)
 (add-hook 'Info-mode-hook 'set-buffer-variable-pitch)
-
-(add-hook 'prog-mode-hook ; Font
-          (lambda ()
-            (set-face-attribute 'default nil
-                                :font "Deja Vu Sans Mono"
-                                :height 135)))
-
-;; Font
-(custom-theme-set-faces
- 'user
- '(variable-pitch ((t (:family "DejaVu Sans 13" :height 140 :weight light)))) ;:weight medium
- '(fixed-pitch ((t (:family "DejaVu Sans Mono 14" :slant normal :weight light :height 150))))) ;:width normal
 
 (defun set-buffer-variable-pitch ()
   "Particular settings for variable-pitch buffers (e.g. org)."
@@ -166,7 +156,6 @@
 (straight-use-package 'popup)
 (straight-use-package 'async)
 (straight-use-package 'helm-core)
-(straight-use-package 'writeroom-mode)
 (straight-use-package 'writegood-mode)
 (straight-use-package 'better-defaults)
 (straight-use-package 'helm)
@@ -248,6 +237,19 @@
 (straight-use-package 'dashboard)
 (straight-use-package 'gcmh)
 (straight-use-package 'golden-ratio)
+(straight-use-package 'use-package)
+(straight-use-package 'fira-code-mode)
+(use-package fira-code-mode
+  :custom (fira-code-mode-disabled-ligatures '("[]" "#{" "#(" "#_" "#_(" "x")) ;; List of ligatures to turn off
+  :hook prog-mode)
+
+;; Fonts
+(set-face-attribute 'default nil
+                    :font "Fira Code-13"
+                    :weight 'normal
+                    ;; :height 135
+                    )
+;; (add-to-list 'default-frame-alist '(font . "Fira Code-11"))
 
 ;; Package settings
 
@@ -431,8 +433,9 @@
 ;; Theme to load on startup
 ;; (load-theme 'darkokai t)
 ;; (setq darkokai-mode-line-padding 1) ;; Default mode-line box width
-(load-theme 'doom-molokai t)
+;; (load-theme 'doom-molokai t)
 ;; (load-theme 'doom-one)
+(load-theme 'doom-monokai-classic t)
 
 ;; Additional colour tweaks
 (set-face-background 'line-number "#242728")
@@ -526,6 +529,12 @@
 (add-hook 'lsp-mode-hook 'lsp-ui-mode)
 
 ;; #########################################
+;; ########## lsp-java settings ############
+;; #########################################
+;; (require 'lsp-java)
+(add-hook 'java-mode-hook #'lsp)
+
+;; #########################################
 ;; ######## Yasnippet-mode settings ########
 ;; #########################################
 
@@ -565,6 +574,11 @@
 ;; ######### Golden ratio settings #########
 ;; #########################################
 (golden-ratio-mode 1)
+
+;; #########################################
+;; ######### Expand-region settings ########
+;; #########################################
+(global-set-key (kbd "C-=") 'er/expand-region)
 
 ;; #########################################
 ;; ######### Org-mode settings #############
@@ -703,7 +717,6 @@ current window."
 ;; Export org-mode files to GitHub Markdown.
 (eval-after-load "org"
   '(require 'ox-gfm nil t))
-
 (define-skeleton org-skeleton
   "Header info for a emacs-org file."
   "Title: "
@@ -730,10 +743,7 @@ current window."
    (java . t)
    (python . t)
    (gnuplot . t)
-   (octave . t)
-   (R . t)
-   (js . t)
-   (awk . t)))
+   (js . t)))
 
 ;; Unused
 ;; (straight-use-package 'highlight-thing)
@@ -751,7 +761,7 @@ current window."
  '(ansi-color-names-vector
    ["#1c1e1f" "#e74c3c" "#b6e63e" "#e2c770" "#268bd2" "#fb2874" "#66d9ef" "#d6d6d4"])
  '(custom-safe-themes
-   '("f2b56244ecc6f4b952b2bcb1d7e517f1f4272876a8c873b378f5cf68e904bd59" "d74c5485d42ca4b7f3092e50db687600d0e16006d8fa335c69cf4f379dbd0eee" "3c7eef027f94956ea194aafa537c78098ab4cd907a2bb11b0e6c5f42e8a95750" "2cbd2a0d861fd6baf446f4393f3c5ed00ed861fe9c9073c87a7c8438ada877d4" "0cb1b0ea66b145ad9b9e34c850ea8e842c4c4c83abe04e37455a1ef4cc5b8791" "c433c87bd4b64b8ba9890e8ed64597ea0f8eb0396f4c9a9e01bd20a04d15d358" "2809bcb77ad21312897b541134981282dc455ccd7c14d74cc333b6e549b824f3" "488e77bdde580d8fc5aeecccd882fea86c80d0cb372f1dde2b458e81e328795b" "dff5f62b0ac5e63e0c7f762007d3a430b8cea391afe7a1acb225cafa115f777c" "e1ecb0536abec692b5a5e845067d75273fe36f24d01210bf0aa5842f2a7e029f" "99ea831ca79a916f1bd789de366b639d09811501e8c092c85b2cb7d697777f93" "e074be1c799b509f52870ee596a5977b519f6d269455b84ed998666cf6fc802a" "fa2b58bb98b62c3b8cf3b6f02f058ef7827a8e497125de0254f56e373abee088" "4daff0f7fb02c7a4d5766a6a3e0931474e7c4fd7da58687899485837d6943b78" "be9645aaa8c11f76a10bcf36aaf83f54f4587ced1b9b679b55639c87404e2499" "e47c0abe03e0484ddadf2ae57d32b0f29f0b2ddfe7ec810bd6d558765d9a6a6c" "0fe9f7a04e7a00ad99ecacc875c8ccb4153204e29d3e57e9669691e6ed8340ce" "afe5e2fb3b1e295e11c3c22e7d9ea7288a605c110363673987c8f6d05b1e9972" "7d937147c6dcb7b7693b98cb34af3fa024083c97167e6909c611ddc05b578034" "9d54f3a9cf99c3ffb6ac8e84a89e8ed9b8008286a81ef1dbd48d24ec84efb2f1" "4a9f595fbffd36fe51d5dd3475860ae8c17447272cf35eb31a00f9595c706050" "a7928e99b48819aac3203355cbffac9b825df50d2b3347ceeec1e7f6b592c647" "846ef3695c42d50347884515f98cc359a7a61b82a8d0c168df0f688cf54bf089" "837f2d1e6038d05f29bbcc0dc39dbbc51e5c9a079e8ecd3b6ef09fc0b149ceb1" "dc677c8ebead5c0d6a7ac8a5b109ad57f42e0fe406e4626510e638d36bcc42df" "82b5e8962e15b145fe0c37612ef44b1fec025cf2aa6af31c87d0b37f8b5ae6e0" "32fd809c28baa5813b6ca639e736946579159098d7768af6c68d78ffa32063f4" default))
+   '("71e5acf6053215f553036482f3340a5445aee364fb2e292c70d9175fb0cc8af7" "9efb2d10bfb38fe7cd4586afb3e644d082cbcdb7435f3d1e8dd9413cbe5e61fc" "d4f8fcc20d4b44bf5796196dbeabec42078c2ddb16dcb6ec145a1c610e0842f3" "f2b56244ecc6f4b952b2bcb1d7e517f1f4272876a8c873b378f5cf68e904bd59" "d74c5485d42ca4b7f3092e50db687600d0e16006d8fa335c69cf4f379dbd0eee" "3c7eef027f94956ea194aafa537c78098ab4cd907a2bb11b0e6c5f42e8a95750" "2cbd2a0d861fd6baf446f4393f3c5ed00ed861fe9c9073c87a7c8438ada877d4" "0cb1b0ea66b145ad9b9e34c850ea8e842c4c4c83abe04e37455a1ef4cc5b8791" "c433c87bd4b64b8ba9890e8ed64597ea0f8eb0396f4c9a9e01bd20a04d15d358" "2809bcb77ad21312897b541134981282dc455ccd7c14d74cc333b6e549b824f3" "488e77bdde580d8fc5aeecccd882fea86c80d0cb372f1dde2b458e81e328795b" "dff5f62b0ac5e63e0c7f762007d3a430b8cea391afe7a1acb225cafa115f777c" "e1ecb0536abec692b5a5e845067d75273fe36f24d01210bf0aa5842f2a7e029f" "99ea831ca79a916f1bd789de366b639d09811501e8c092c85b2cb7d697777f93" "e074be1c799b509f52870ee596a5977b519f6d269455b84ed998666cf6fc802a" "fa2b58bb98b62c3b8cf3b6f02f058ef7827a8e497125de0254f56e373abee088" "4daff0f7fb02c7a4d5766a6a3e0931474e7c4fd7da58687899485837d6943b78" "be9645aaa8c11f76a10bcf36aaf83f54f4587ced1b9b679b55639c87404e2499" "e47c0abe03e0484ddadf2ae57d32b0f29f0b2ddfe7ec810bd6d558765d9a6a6c" "0fe9f7a04e7a00ad99ecacc875c8ccb4153204e29d3e57e9669691e6ed8340ce" "afe5e2fb3b1e295e11c3c22e7d9ea7288a605c110363673987c8f6d05b1e9972" "7d937147c6dcb7b7693b98cb34af3fa024083c97167e6909c611ddc05b578034" "9d54f3a9cf99c3ffb6ac8e84a89e8ed9b8008286a81ef1dbd48d24ec84efb2f1" "4a9f595fbffd36fe51d5dd3475860ae8c17447272cf35eb31a00f9595c706050" "a7928e99b48819aac3203355cbffac9b825df50d2b3347ceeec1e7f6b592c647" "846ef3695c42d50347884515f98cc359a7a61b82a8d0c168df0f688cf54bf089" "837f2d1e6038d05f29bbcc0dc39dbbc51e5c9a079e8ecd3b6ef09fc0b149ceb1" "dc677c8ebead5c0d6a7ac8a5b109ad57f42e0fe406e4626510e638d36bcc42df" "82b5e8962e15b145fe0c37612ef44b1fec025cf2aa6af31c87d0b37f8b5ae6e0" "32fd809c28baa5813b6ca639e736946579159098d7768af6c68d78ffa32063f4" default))
  '(fci-rule-color "#555556")
  '(horizontal-scroll-bar-mode nil)
  '(jdee-db-active-breakpoint-face-colors (cons "#1B2229" "#fd971f"))
