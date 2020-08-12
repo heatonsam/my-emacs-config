@@ -76,7 +76,11 @@
       line-spacing 2
       sentence-end-double-space nil
       gc-cons-threshold 100000000
+      lsp-completion-provider :capf
+      lsp-idle-delay 0.500
       read-process-output-max (* 1024 1024)) ; 1mb
+
+(setq comp-deferred-compilation t) ; for gccemacs
 
 (customize-set-variable 'scroll-bar-mode nil)
 (customize-set-variable 'horizontal-scroll-bar-mode nil)
@@ -242,10 +246,11 @@
 (use-package fira-code-mode
   :custom (fira-code-mode-disabled-ligatures '("[]" "#{" "#(" "#_" "#_(" "x")) ;; List of ligatures to turn off
   :hook prog-mode)
+(straight-use-package 'company-box)
 
 ;; Fonts
 (set-face-attribute 'default nil
-                    :font "Fira Code-13"
+                    :font "Fira Code-12"
                     :weight 'normal
                     ;; :height 135
                     )
@@ -405,6 +410,11 @@
       company-dabbrev-code-ignore-case t)
 
 ;; #########################################
+;; ######### Company-box settings ##########
+;; #########################################
+(add-hook 'company-mode-hook 'company-box-mode)
+
+;; #########################################
 ;; ###### Aggressive-indent settings #######
 ;; #########################################
 (add-hook 'prog-mode-hook #'aggressive-indent-mode)
@@ -499,7 +509,8 @@
 (setq nrepl-hide-special-buffers t
       cider-repl-pop-to-buffer-on-connect nil
       cider-popup-stacktraces nil
-      cider-repl-popup-stacktraces t)
+      cider-repl-popup-stacktraces t
+      cider-lein-parameters "repl :headless :host ::")
 
 ;; #########################################
 ;; ##### Flycheck-clj-kondo settings #######
@@ -527,6 +538,8 @@
 ;; #########################################
 (add-hook 'prog-mode-hook #'lsp)
 (add-hook 'lsp-mode-hook 'lsp-ui-mode)
+;; (add-hook 'lsp-mode-hook 'treemacs-mode)
+
 
 ;; #########################################
 ;; ########## lsp-java settings ############
