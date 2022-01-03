@@ -73,13 +73,12 @@
           (function (lambda ()
                       (setq indent-tabs-mode nil
                             tab-width 2))))
-(setq js2-basic-offset 2)
 
 ;; Completely disable the mouse
-; (dolist (key '([drag-mouse-1] [down-mouse-1] [mouse-1]
-;                [drag-mouse-2] [down-mouse-2] [mouse-2]
-;                [drag-mouse-3] [down-mouse-3] [mouse-3]))
-;   (global-unset-key key))
+                                        ; (dolist (key '([drag-mouse-1] [down-mouse-1] [mouse-1]
+                                        ;                [drag-mouse-2] [down-mouse-2] [mouse-2]
+                                        ;                [drag-mouse-3] [down-mouse-3] [mouse-3]))
+                                        ;   (global-unset-key key))
 
 ;; Disable arrow key movement
 (dolist (key '("<left>" "<right>" "<up>" "<down>"))
@@ -137,7 +136,7 @@
 (straight-use-package 'yaml-mode)
 (straight-use-package 'json-mode)
 (straight-use-package 'web-mode)
-(straight-use-package 'js2-mode)
+;;(straight-use-package 'js2-mode)
 (straight-use-package 'dotenv-mode)
 (straight-use-package 'lsp-mode)
 (straight-use-package 'flycheck-inline)
@@ -154,10 +153,10 @@
 (straight-use-package 'treemacs-magit)
 (straight-use-package 'lsp-treemacs)
 (straight-use-package 'undo-tree)
-;(straight-use-package 'disable-mouse)
+                                        ;(straight-use-package 'disable-mouse)
 (straight-use-package 'good-scroll)
 (straight-use-package 'eslintd-fix)
-(straight-use-package 'tide)
+;; (straight-use-package 'tide)
 (straight-use-package 'hl-todo)
 (straight-use-package 'pcre2el)
 (straight-use-package 's)
@@ -171,51 +170,52 @@
 ;;; dap-mode
 (setq dap-auto-configure-features '(sessions locals controls tooltip))
 
-;;; Tide
+;; TypeScript
+;; lsp-mode for ts server with js2-mode for highlighting and dap-mode for debugging
 
-(defun setup-tide-mode ()
-    (interactive)
-    (tide-setup)
-    (flycheck-mode +1)
-    (setq flycheck-check-syntax-automatically '(save mode-enabled))
-    (setq flycheck-checker 'javascript-tide)
-    (js2-mode-hide-warnings-and-errors)
-    (eldoc-mode +1)
-    (tide-hl-identifier-mode +1)
-    (setq company-tooltip-align-annotations t)
-    (local-set-key (kbd "C-c d") 'tide-documentation-at-point)
-    (add-hook 'before-save-hook 'tide-format-before-save)
-    (setq web-mode-enable-auto-quoting nil)
-    (setq web-mode-markup-indent-offset 2)
-    (setq web-mode-code-indent-offset 2)
-    (setq web-mode-attr-indent-offset 2)
-    (setq web-mode-attr-value-indent-offset 2)
+(straight-use-package 'typescript-mode)
+(straight-use-package 'tree-sitter)
+(straight-use-package 'tree-sitter-langs)
 
-    (require 'dap-node)
-    (dap-mode 1)
-    (dap-ui-mode 1)
-    ;; enables mouse hover support
-    (dap-tooltip-mode 1)
-    ;; use tooltips for mouse hover
-    ;; if it is not enabled `dap-mode' will use the minibuffer.
-    (tooltip-mode 1)
-    ;; displays floating panel with debug buttons
-    ;; requies emacs 26+
-    (dap-ui-controls-mode 1)
-    ;; company is an optional dependency. You have to
-    ;; install it separately via package-install
-    ;; `M-x package-install [ret] company`
-    (company-mode +1))
-
-;; aligns annotation to the right hand side
-  (setq company-tooltip-align-annotations t)
-
-  ;; formats the buffer before saving
-  (add-hook 'before-save-hook 'tide-format-before-save)
-  (add-hook 'js2-mode-hook #'setup-tide-mode)
-
-(setq tide-format-options '(:indentSize 2 :tabSize 2))
-
+(add-hook 'typescript-mode-hook (function
+                                 (lambda ()
+                                   ;; tree-sitter
+                                   (require 'tree-sitter)
+                                   (require 'tree-sitter-langs)
+                                   (global-tree-sitter-mode)
+                                   (tree-sitter-hl-mode)
+                                   ;; format on save
+                                   ;; (add-hook 'before-save-hook 'lsp-format-buffer)
+                                   ;; formatting
+                                   (setq web-mode-enable-auto-quoting nil)
+                                   (setq web-mode-markup-indent-offset 2)
+                                   (setq web-mode-code-indent-offset 2)
+                                   (setq web-mode-attr-indent-offset 2)
+                                   (setq web-mode-attr-value-indent-offset 2)
+                                   (setq-default tab-width 2)
+                                   ;; lsp
+                                   (lsp)
+                                   ;; syntax check
+                                   (flycheck-mode +1)
+                                   (setq company-tooltip-align-annotations t)
+                                   (eldoc-mode +1)
+                                   (setq flycheck-check-syntax-automatically '(save mode-enabled))
+                                   (setq flycheck-checker 'lsp)
+                                   ;; debugging
+                                   (require 'dap-node)
+                                   (dap-node-setup)
+                                   (dap-mode 1)
+                                   (dap-ui-mode 1)
+                                   ;; enables mouse hover support
+                                   (dap-tooltip-mode 1)
+                                   ;; use tooltips for mouse hover
+                                   ;; if it is not enabled `dap-mode' will use the minibuffer.
+                                   (tooltip-mode 1)
+                                   ;; displays floating panel with debug buttons
+                                   ;; requies emacs 26+
+                                   (dap-ui-controls-mode 1)
+                                   ;; Completion
+                                   (company-mode +1))))
 
 ;; #########################################
 ;; ############# Helm settings #############
@@ -289,10 +289,10 @@
       helm-swoop-use-fuzzy-match t)
 
 (add-to-list 'display-buffer-alist
-                    `(,(rx bos "*helm" (* not-newline) "*" eos)
-                         (display-buffer-in-side-window)
-                         (inhibit-same-window . t)
-                         (window-height . 0.4)))
+             `(,(rx bos "*helm" (* not-newline) "*" eos)
+               (display-buffer-in-side-window)
+               (inhibit-same-window . t)
+               (window-height . 0.4)))
 
 ;; #########################################
 ;; ########### Flycheck settings ###########
@@ -366,14 +366,14 @@
 ;; #########################################
 ;; ####### Disable-mouse settings ##########
 ;; #########################################
-;(require 'disable-mouse)
-;(global-disable-mouse-mode)
+                                        ;(require 'disable-mouse)
+                                        ;(global-disable-mouse-mode)
 
 ;; #########################################
 ;; ######### Js2-mode settings #############
 ;; #########################################
-(add-to-list 'auto-mode-alist '("\\.js?\\'" . js2-mode))
-(add-to-list 'auto-mode-alist '("\\.ts?\\'" . js2-mode))
+(add-to-list 'auto-mode-alist '("\\.js?\\'" . js-mode))
+(add-to-list 'auto-mode-alist '("\\.ts?\\'" . typescript-mode))
 
 ;; #########################################
 ;; ######### Yaml-mode settings ############
@@ -382,10 +382,9 @@
 
 ;; Misc
 
-(set-face-foreground 'line-number "#9BA3A7")
+;; (set-face-foreground 'line-number "#9BA3A7")
 (good-scroll-mode 1)
 ;; (setq flycheck-javascript-eslint-executable "eslint_d")
-(add-hook 'js2-mode-hook 'eslintd-fix-mode)
 ;; #########################################
 ;; ####### Smartparens-mode settings #######
 ;; #########################################
